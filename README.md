@@ -1,18 +1,19 @@
 # Advanced Clipboard Manager
 
-A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features both GUI and CLI interfaces, making it versatile for different environments and user preferences.
+A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features GUI, CLI, and Quick Paste Popup interfaces, making it versatile for different environments and user preferences.
 
 ## Features
 
 - **Clipboard Monitoring**: Continuously tracks text and images copied to your clipboard
 - **Database Storage**: Stores clipboard history in a PostgreSQL database
-- **Multiple Interfaces**: Both GUI and CLI interfaces available
+- **Multiple Interfaces**: GUI, CLI, and Quick Paste Popup interfaces available
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Favorites**: Mark frequently used items as favorites for quick access
 - **Search Functionality**: Quickly find items in your clipboard history
 - **Tagging System**: Organize clipboard items with custom tags
 - **Image Support**: Store, view, and save images from your clipboard
 - **Preview Panel**: Preview text and images before copying
+- **Quick Paste Popup**: Access recent clipboard items through a lightweight popup interface
 
 ## Requirements
 
@@ -36,12 +37,15 @@ python clipboard_app.py --gui
 
 # Start in CLI mode
 python clipboard_app.py --cli
+
+# Start the Quick Paste Popup
+python clipboard_app.py --popup
 ```
 
 ### Running the CLI Directly
 
 ```bash
-python main.py
+python cli_run.py
 ```
 
 ### Command-line Arguments
@@ -91,6 +95,23 @@ clipboard> copy 2
 clipboard> exit
 ```
 
+## Quick Paste Popup
+
+The Quick Paste Popup provides instant access to your most recent clipboard items:
+
+- Trigger with a keyboard shortcut (Ctrl+Shift+V by default)
+- Lightweight interface that appears near your cursor
+- Shows the most recent clipboard items
+- Click an item to paste it
+- Right-click to see additional options (delete, favorite)
+- Keyboard navigation supported
+
+To use the Quick Paste Popup as a standalone application:
+
+```bash
+python clipboard_app.py --popup
+```
+
 ## In-Memory Clipboard
 
 In environments where system clipboard tools (like xclip on Linux) are not available, the application uses an in-memory clipboard. This allows you to still save and retrieve clipboard items, although they won't be accessible to other applications until you copy them to the system clipboard.
@@ -118,6 +139,7 @@ The GUI interface provides a user-friendly way to interact with your clipboard h
 - **Context Menu**: Right-click on items for additional options
 - **Image Handling**: View, copy, and save images from your clipboard
 - **Favorites**: Mark frequently used items with a star for easy access
+- **Tagging System**: Organize your clipboard items with custom tags
 
 ### GUI Controls
 
@@ -127,6 +149,7 @@ The GUI interface provides a user-friendly way to interact with your clipboard h
 - **Item List**: Browse and select clipboard items
 - **Preview Panel**: Preview the content of selected items
 - **Action Buttons**: Copy, delete, or favorite selected items
+- **Tag Management**: Add, remove, and filter by tags
 
 ## Future Features
 

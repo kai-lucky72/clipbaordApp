@@ -19,6 +19,10 @@ args = "ClipboardManagerCLI"
 task = "workflow.run"
 args = "ClipboardManager"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "QuickPastePopup"
+
 [[workflows.workflow]]
 name = "ClipboardManagerCLI"
 author = "agent"
@@ -46,6 +50,20 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python clipboard_app.py --gui"
+
+[[workflows.workflow]]
+name = "QuickPastePopup"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python clipboard_app.py --popup"
 
 [deployment]
 run = ["sh", "-c", "python main.py"]

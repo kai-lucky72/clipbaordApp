@@ -19,6 +19,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description="Advanced Clipboard Manager")
     parser.add_argument("--cli", action="store_true", help="Run in command-line interface mode")
     parser.add_argument("--gui", action="store_true", help="Run in graphical user interface mode")
+    parser.add_argument("--popup", action="store_true", help="Show quick paste popup window")
     parser.add_argument("--monitor", action="store_true", help="Start clipboard monitoring on startup (CLI mode)")
     parser.add_argument("--recent", type=int, help="Display N most recent clipboard items and exit (CLI mode)")
     return parser.parse_args()
@@ -27,6 +28,18 @@ def main():
     """Application entry point"""
     # Parse top-level arguments for this script
     args = parse_arguments()
+    
+    # Handle popup mode first since it's a specialized mode
+    if args.popup:
+        logger.info("Starting in Quick Paste Popup mode")
+        try:
+            import quick_paste_popup
+            return quick_paste_popup.main()
+        except ImportError as e:
+            logger.error(f"Failed to import Quick Paste Popup: {e}")
+            print("Error: Quick Paste Popup not available.")
+            # Fall back to GUI mode
+            args.gui = True
     
     # Default to GUI mode if no mode is specified
     if not args.cli and not args.gui:
@@ -47,6 +60,8 @@ def main():
                 sys_args.remove("--cli")
             if "--gui" in sys_args:
                 sys_args.remove("--gui")
+            if "--popup" in sys_args:
+                sys_args.remove("--popup")
                 
             # Set up remaining args for CLI
             if sys_args:
