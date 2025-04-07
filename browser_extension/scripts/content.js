@@ -1,368 +1,357 @@
 // Advanced Clipboard Manager - Content Script
 
-// This script runs in the context of web pages to help with clipboard operations
-
-// Global state
+// Constants
+const API_BASE_URL = 'http://localhost:5000/api';
 let quickPastePopup = null;
-let isPopupVisible = false;
+let recentItems = [];
+let lastCopyEvent = null;
 
-// Create and inject styles for the popup
-const injectStyles = () => {
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
-    .clipboard-manager-popup {
-      position: absolute;
-      width: 280px;
-      max-height: 300px;
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-      z-index: 2147483647;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+// Listen for keyboard events
+document.addEventListener('keydown', function(event) {
+    // Check for Ctrl+C (copy event)
+    if (event.ctrlKey && event.code === 'KeyC') {
+        handleCopyEvent();
     }
     
-    .clipboard-manager-popup.visible {
-      opacity: 1;
-      transform: translateY(0);
+    // Check for Ctrl+V (paste event) - to show quick paste popup
+    if (event.ctrlKey && event.code === 'KeyV') {
+        handlePasteEvent(event);
     }
-    
-    .clipboard-items {
-      max-height: 250px;
-      overflow-y: auto;
-    }
-    
-    .clipboard-item {
-      padding: 10px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      cursor: pointer;
-      font-size: 13px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: #333;
-    }
-    
-    .clipboard-item:hover {
-      background-color: #f5f8ff;
-    }
-    
-    .clipboard-item.text-item:before {
-      content: "📄 ";
-      opacity: 0.5;
-    }
-    
-    .clipboard-item.image-item:before {
-      content: "🖼️ ";
-      opacity: 0.5;
-    }
-    
-    .clipboard-footer {
-      padding: 8px 12px;
-      font-size: 12px;
-      text-align: center;
-      background-color: #f7f7f7;
-      border-top: 1px solid #eaeaea;
-    }
-    
-    .clipboard-footer a {
-      color: #4a6cf7;
-      text-decoration: none;
-    }
-    
-    .clipboard-footer a:hover {
-      text-decoration: underline;
-    }
-  `;
-  document.head.appendChild(styleEl);
-};
+});
 
-// Create quick paste popup
-const createQuickPastePopup = () => {
-  // If a popup already exists, remove it
-  if (quickPastePopup) {
-    document.body.removeChild(quickPastePopup);
-  }
-  
-  // Create a new popup
-  quickPastePopup = document.createElement('div');
-  quickPastePopup.className = 'clipboard-manager-popup';
-  quickPastePopup.innerHTML = `
-    <div class="clipboard-items"></div>
-    <div class="clipboard-footer">
-      <a href="http://localhost:5000" target="_blank">Open Clipboard Manager</a>
-    </div>
-  `;
-  
-  // Add it to the page but keep it hidden
-  document.body.appendChild(quickPastePopup);
-  
-  // Close the popup when clicking outside
-  document.addEventListener('click', (e) => {
-    if (isPopupVisible && !quickPastePopup.contains(e.target)) {
-      hideQuickPastePopup();
+// Listen for messages from the background script
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    if (request.action === 'showQuickPaste') {
+        showQuickPastePopup();
+        sendResponse({success: true});
     }
-  });
-  
-  // Close on escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && isPopupVisible) {
-      hideQuickPastePopup();
-    }
-  });
-  
-  return quickPastePopup;
-};
+    
+    return true; // Indicate async response
+});
 
-// Show quick paste popup near the cursor position
-const showQuickPastePopup = async (x, y) => {
-  if (!quickPastePopup) {
-    injectStyles();
-    createQuickPastePopup();
-  }
-  
-  // Position the popup near the cursor
-  quickPastePopup.style.left = `${x}px`;
-  quickPastePopup.style.top = `${y}px`;
-  
-  // Get the 5 most recent clipboard items
-  try {
-    const response = await fetch('http://localhost:5000/api/items?per_page=5');
-    const data = await response.json();
+// Handle copy event
+function handleCopyEvent() {
+    // Capture the selected text
+    const selectedText = window.getSelection().toString();
     
-    const itemsContainer = quickPastePopup.querySelector('.clipboard-items');
-    itemsContainer.innerHTML = '';
-    
-    if (data.items && data.items.length > 0) {
-      data.items.forEach(item => {
-        const itemElement = document.createElement('div');
-        itemElement.className = `clipboard-item ${item.type}-item`;
-        
-        if (item.type === 'text') {
-          // Limit text to a reasonable length
-          const previewText = item.preview || '';
-          itemElement.textContent = previewText;
-        } else if (item.type === 'image') {
-          itemElement.textContent = 'Image';
-        }
-        
-        // When an item is clicked, paste it and hide the popup
-        itemElement.addEventListener('click', async () => {
-          // Get full item content
-          const itemResponse = await fetch(`http://localhost:5000/api/item/${item.id}`);
-          const itemData = await itemResponse.json();
-          
-          if (itemData.type === 'text') {
-            // Find active element
-            const activeElement = document.activeElement;
-            
-            if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)) {
-              // Get current selection
-              const start = activeElement.selectionStart || 0;
-              const end = activeElement.selectionEnd || 0;
-              
-              // Get text to paste
-              const textToPaste = itemData.content || '';
-              
-              if (activeElement.isContentEditable) {
-                // Handle contentEditable elements
-                document.execCommand('insertText', false, textToPaste);
-              } else {
-                // Handle regular input elements
-                const currentValue = activeElement.value || '';
-                const beforeText = currentValue.substring(0, start);
-                const afterText = currentValue.substring(end);
-                
-                // Set new value
-                activeElement.value = beforeText + textToPaste + afterText;
-                
-                // Position cursor after pasted text
-                activeElement.selectionStart = activeElement.selectionEnd = start + textToPaste.length;
-                
-                // Dispatch input event to trigger any listeners
-                const event = new Event('input', { bubbles: true });
-                activeElement.dispatchEvent(event);
-              }
-            }
-          } else if (itemData.type === 'image' && itemData.image_data) {
-            // For images, we can use clipboard API to copy the image
-            try {
-              // Create an image element to load the image
-              const img = new Image();
-              img.src = itemData.image_data;
-              img.onload = () => {
-                // Create a canvas to draw the image
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                
-                // Convert canvas to blob
-                canvas.toBlob(blob => {
-                  // Try using Clipboard API to write the image
-                  navigator.clipboard.write([
-                    new ClipboardItem({ 'image/png': blob })
-                  ]).catch(err => {
-                    console.error('Could not copy image:', err);
-                  });
-                });
-              };
-            } catch (error) {
-              console.error('Error copying image:', error);
-            }
-          }
-          
-          // Hide popup after pasting
-          hideQuickPastePopup();
+    if (selectedText && selectedText.trim()) {
+        // Save the selected text to clipboard history via background script
+        chrome.runtime.sendMessage({
+            action: 'textCopied',
+            text: selectedText
         });
         
-        itemsContainer.appendChild(itemElement);
-      });
-    } else {
-      // No items
-      const noItemsElement = document.createElement('div');
-      noItemsElement.className = 'clipboard-item';
-      noItemsElement.textContent = 'No clipboard items found';
-      itemsContainer.appendChild(noItemsElement);
+        // Save the copy event details for potential paste popup later
+        lastCopyEvent = {
+            timestamp: Date.now(),
+            position: getCurrentCursorPosition()
+        };
     }
+}
+
+// Handle paste event
+function handlePasteEvent(event) {
+    // We don't preventDefault because we want the normal paste to still occur
+    // if the user doesn't select from our popup
     
-    // Show the popup
-    isPopupVisible = true;
-    quickPastePopup.classList.add('visible');
+    // Show quick paste popup near the cursor
+    showQuickPastePopup();
+}
+
+// Show quick paste popup
+function showQuickPastePopup() {
+    // First load the recent items
+    loadRecentItems(function() {
+        // Get current cursor position
+        const cursorPos = getCurrentCursorPosition();
+        
+        // Create and show the popup
+        createQuickPastePopup(cursorPos);
+    });
+}
+
+// Load recent clipboard items
+function loadRecentItems(callback) {
+    fetch(`${API_BASE_URL}/items/recent?limit=5`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.items) {
+                recentItems = data.items;
+            } else {
+                console.error('Error loading recent items:', data.error || 'Unknown error');
+                recentItems = [];
+            }
+            
+            if (callback) callback();
+        })
+        .catch(error => {
+            console.error('Failed to load recent items:', error);
+            recentItems = [];
+            
+            if (callback) callback();
+        });
+}
+
+// Create and show the quick paste popup
+function createQuickPastePopup(position) {
+    // Remove existing popup if it exists
+    removeQuickPastePopup();
     
-  } catch (error) {
-    console.error('Error fetching clipboard items:', error);
-    // Show error in popup
-    const itemsContainer = quickPastePopup.querySelector('.clipboard-items');
-    itemsContainer.innerHTML = `
-      <div class="clipboard-item">
-        Error connecting to Clipboard Manager server.
-        Make sure it's running at http://localhost:5000
-      </div>
+    // Create the popup container
+    quickPastePopup = document.createElement('div');
+    quickPastePopup.id = 'acm-quick-paste-popup';
+    quickPastePopup.style.cssText = `
+        position: fixed;
+        z-index: 9999999;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        max-width: 300px;
+        width: 300px;
+        font-family: sans-serif;
+        font-size: 14px;
+        top: ${position.y}px;
+        left: ${position.x}px;
+        overflow: hidden;
     `;
     
-    // Show the popup
-    isPopupVisible = true;
-    quickPastePopup.classList.add('visible');
-  }
-};
-
-// Hide quick paste popup
-const hideQuickPastePopup = () => {
-  if (quickPastePopup) {
-    quickPastePopup.classList.remove('visible');
-    isPopupVisible = false;
-  }
-};
-
-// Listen for copy event to track copied content
-document.addEventListener('copy', (event) => {
-  setTimeout(() => {
-    // Read from clipboard
-    navigator.clipboard.readText().then(text => {
-      if (text) {
-        // Send to background script for storage
-        chrome.runtime.sendMessage({
-          action: 'copyToClipboard',
-          text: text
-        });
-      }
-    }).catch(err => {
-      console.error('Could not read clipboard contents:', err);
-    });
-  }, 100); // Small delay to ensure clipboard has been updated
-});
-
-// Listen for paste event to show quick paste popup
-document.addEventListener('keydown', (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-    // Show quick paste popup near cursor position
-    showQuickPastePopup(event.clientX || window.innerWidth / 2, event.clientY + 20 || window.innerHeight / 2);
+    // Create the header
+    const header = document.createElement('div');
+    header.style.cssText = `
+        padding: 8px 12px;
+        background-color: #2c3e50;
+        color: white;
+        font-weight: bold;
+        font-size: 12px;
+        border-bottom: 1px solid #ddd;
+    `;
+    header.textContent = 'Quick Paste';
+    quickPastePopup.appendChild(header);
     
-    // Don't prevent default paste operation - user can still use normal paste
-    // This just shows our options alongside it
-  }
-});
+    // Create the items container
+    const itemsContainer = document.createElement('div');
+    itemsContainer.style.cssText = `
+        max-height: 200px;
+        overflow-y: auto;
+    `;
+    
+    // Add items or message if no items
+    if (recentItems.length === 0) {
+        const emptyMessage = document.createElement('div');
+        emptyMessage.style.cssText = `
+            padding: 10px 12px;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+        `;
+        emptyMessage.textContent = 'No recent clipboard items';
+        itemsContainer.appendChild(emptyMessage);
+    } else {
+        recentItems.forEach((item, index) => {
+            const itemElement = document.createElement('div');
+            itemElement.style.cssText = `
+                padding: 8px 12px;
+                border-bottom: 1px solid #eee;
+                cursor: pointer;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            `;
+            itemElement.onmouseover = function() {
+                this.style.backgroundColor = '#f0f0f0';
+            };
+            itemElement.onmouseout = function() {
+                this.style.backgroundColor = 'transparent';
+            };
+            
+            // Format content
+            let displayContent = '';
+            if (item.type === 'image') {
+                displayContent = '[Image]';
+            } else {
+                displayContent = item.content;
+                if (displayContent.length > 40) {
+                    displayContent = displayContent.substring(0, 40) + '...';
+                }
+            }
+            
+            itemElement.textContent = displayContent;
+            
+            // Set click handler
+            itemElement.onclick = function() {
+                pasteItemFromPopup(item);
+            };
+            
+            itemsContainer.appendChild(itemElement);
+        });
+    }
+    
+    quickPastePopup.appendChild(itemsContainer);
+    
+    // Create the footer
+    const footer = document.createElement('div');
+    footer.style.cssText = `
+        padding: 6px 12px;
+        background-color: #f5f5f5;
+        border-top: 1px solid #ddd;
+        text-align: center;
+        font-size: 11px;
+    `;
+    
+    const link = document.createElement('a');
+    link.href = 'http://localhost:5000';
+    link.target = '_blank';
+    link.textContent = 'Open Clipboard Manager';
+    link.style.cssText = `
+        color: #3498db;
+        text-decoration: none;
+    `;
+    footer.appendChild(link);
+    quickPastePopup.appendChild(footer);
+    
+    // Add the popup to the page
+    document.body.appendChild(quickPastePopup);
+    
+    // Position the popup near cursor but ensure it's visible
+    repositionPopup();
+    
+    // Add click listener to close popup when clicking outside
+    setTimeout(() => {
+        document.addEventListener('click', documentClickHandler);
+    }, 100);
+}
 
-// Listen for messages from background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // Handle paste request
-  if (request.action === 'pasteText') {
-    // Find active element
+// Reposition popup to ensure it's visible in the viewport
+function repositionPopup() {
+    if (!quickPastePopup) return;
+    
+    const rect = quickPastePopup.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Check if popup overflows to the right
+    if (rect.right > viewportWidth) {
+        quickPastePopup.style.left = (viewportWidth - rect.width - 10) + 'px';
+    }
+    
+    // Check if popup overflows to the bottom
+    if (rect.bottom > viewportHeight) {
+        quickPastePopup.style.top = (viewportHeight - rect.height - 10) + 'px';
+    }
+}
+
+// Handle document click to close popup
+function documentClickHandler(e) {
+    if (quickPastePopup && !quickPastePopup.contains(e.target)) {
+        removeQuickPastePopup();
+    }
+}
+
+// Remove the quick paste popup
+function removeQuickPastePopup() {
+    if (quickPastePopup && quickPastePopup.parentNode) {
+        quickPastePopup.parentNode.removeChild(quickPastePopup);
+        quickPastePopup = null;
+        
+        // Remove the click listener
+        document.removeEventListener('click', documentClickHandler);
+    }
+}
+
+// Paste an item from the popup
+function pasteItemFromPopup(item) {
+    // Copy the item to clipboard via background script
+    chrome.runtime.sendMessage({
+        action: 'copyToClipboard',
+        text: item.content
+    }, function(response) {
+        if (response && response.success) {
+            // Remove popup after selection
+            removeQuickPastePopup();
+            
+            // Try to simulate a paste action
+            simulatePaste();
+        }
+    });
+}
+
+// Try to simulate a paste action
+function simulatePaste() {
+    // This is tricky because browser security restrictions don't allow
+    // simulating paste directly in many contexts
+    
+    // Focus on active element and try to dispatch a paste event
     const activeElement = document.activeElement;
     
-    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.isContentEditable)) {
-      // Get current selection
-      const start = activeElement.selectionStart || 0;
-      const end = activeElement.selectionEnd || 0;
-      
-      // Get text to paste
-      const textToPaste = request.text || '';
-      
-      if (activeElement.isContentEditable) {
-        // Handle contentEditable elements
-        document.execCommand('insertText', false, textToPaste);
-      } else {
-        // Handle regular input elements
-        const currentValue = activeElement.value || '';
-        const beforeText = currentValue.substring(0, start);
-        const afterText = currentValue.substring(end);
-        
-        // Set new value
-        activeElement.value = beforeText + textToPaste + afterText;
-        
-        // Position cursor after pasted text
-        activeElement.selectionStart = activeElement.selectionEnd = start + textToPaste.length;
-        
-        // Dispatch input event to trigger any listeners
-        const event = new Event('input', { bubbles: true });
-        activeElement.dispatchEvent(event);
-      }
-      
-      sendResponse({ success: true });
-    } else {
-      sendResponse({ success: false, error: 'No valid input element focused' });
+    if (activeElement) {
+        try {
+            // Try to create and dispatch a paste event
+            const pasteEvent = new ClipboardEvent('paste', {
+                bubbles: true,
+                cancelable: true,
+                clipboardData: new DataTransfer()
+            });
+            
+            activeElement.dispatchEvent(pasteEvent);
+        } catch (e) {
+            console.log('Paste simulation failed, user will need to press Ctrl+V again');
+        }
     }
-  }
-  
-  // Handle get selected text request
-  if (request.action === 'getSelectedText') {
-    const selection = window.getSelection().toString().trim();
-    sendResponse({ text: selection });
-  }
-  
-  // Return true to indicate asynchronous response
-  return true;
-});
+}
 
-// Detect when something is copied on the page
-document.addEventListener('copy', (event) => {
-  // Get selected text
-  const selection = window.getSelection().toString().trim();
-  
-  if (selection) {
-    // Send to background script
-    chrome.runtime.sendMessage({
-      action: 'textCopied',
-      text: selection
-    });
-  }
-});
-
-// Add right-click context menu for easier copying
-document.addEventListener('mousedown', (event) => {
-  // Right click
-  if (event.button === 2) {
-    // Get selected text
-    const selection = window.getSelection().toString().trim();
+// Helper function to get current cursor/caret position
+function getCurrentCursorPosition() {
+    let x = 0;
+    let y = 0;
     
-    // Save selection to storage for context menu
-    if (selection) {
-      chrome.storage.local.set({ currentSelection: selection });
+    // Try to use last known copy event position
+    if (lastCopyEvent && Date.now() - lastCopyEvent.timestamp < 5000) {
+        return lastCopyEvent.position;
     }
-  }
+    
+    // Try to get selection coordinates
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        const rects = range.getClientRects();
+        
+        if (rects.length > 0) {
+            const rect = rects[0];
+            x = rect.right;
+            y = rect.bottom + 10; // Position below the selection
+            
+            return { x, y };
+        }
+    }
+    
+    // Fallback to current active element
+    const activeElement = document.activeElement;
+    if (activeElement) {
+        const rect = activeElement.getBoundingClientRect();
+        x = rect.left;
+        y = rect.bottom;
+        
+        return { x, y };
+    }
+    
+    // Fallback to mouse position or center of screen
+    if (typeof mouseX !== 'undefined' && typeof mouseY !== 'undefined') {
+        return { x: mouseX, y: mouseY };
+    } else {
+        return { 
+            x: window.innerWidth / 2 - 150, 
+            y: window.innerHeight / 3 
+        };
+    }
+}
+
+// Track mouse position as a fallback for cursor position
+let mouseX = 0;
+let mouseY = 0;
+document.addEventListener('mousemove', function(e) {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
 });
+
+// Initialize
+console.log('Advanced Clipboard Manager content script initialized');

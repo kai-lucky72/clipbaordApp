@@ -1,0 +1,38 @@
+# Quick Paste Popup Appearance
+
+## Main Popup
+- **Position**: Near the text cursor when user presses Ctrl+V
+- **Size**: 300px width, auto height (usually around 200-250px)
+- **Background**: White with subtle drop shadow
+- **Header**: Dark blue bar with "Quick Paste" text in white
+- **Contents**: Shows 5 most recent clipboard items as a list
+- **Item Appearance**: Shows the first 40-50 characters of each item with ellipsis if longer
+- **Interaction**: Hovering highlights the item in light blue
+- **Footer**: Light gray bar with "Open Clipboard Manager" link
+
+## When User Interacts
+1. When user presses Ctrl+C: 
+   - Content is silently saved to clipboard history
+   - No visual indication shown (doesn't disrupt workflow)
+
+2. When user presses Ctrl+V:
+   - Quick Paste popup appears near cursor
+   - User can click an item to paste it
+   - If user clicks elsewhere, popup disappears and standard paste occurs
+   - If user selects an item, popup disappears and selected item is pasted
+
+3. When user clicks extension icon in browser toolbar:
+   - Full popup opens with search capability
+   - Shows more items and allows search/filtering
+
+## Visual Style
+- Consistent with the main app's styling (blue/dark blue color scheme)
+- Clean, minimal interface that doesn't distract
+- Subtle animations for appearance/disappearance
+- Clear visual hierarchy with distinct header/content/footer areas
+- Smart positioning to ensure it fits on screen
+
+## Browser Extension Icon
+- Shows clipboard icon in toolbar
+- Uses blue gradient background with clipboard and papers design
+- Available in 16px, 48px, and 128px sizes for various browser contexts
