@@ -2,19 +2,15 @@
 Clipboard Manager Module
 
 This module is responsible for monitoring the clipboard for changes
-and managing clipboard content (text and images).
+and managing clipboard content (text and images) in a CLI environment.
 """
 import logging
 import time
 import io
+import hashlib
 from datetime import datetime
 from threading import Thread, Event
 from enum import Enum
-
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QObject, pyqtSignal, QMimeData, QBuffer, QByteArray
-from PyQt5.QtGui import QImage, QPixmap, QGuiApplication
-from PIL import Image
 
 from database import DatabaseManager
 
@@ -24,17 +20,13 @@ class ClipItemType(Enum):
     TEXT = "text"
     IMAGE = "image"
 
-class ClipboardManager(QObject):
+class ClipboardManager:
     """
-    Monitors and manages clipboard operations.
+    Monitors and manages clipboard operations in a CLI environment.
     """
-    clipboard_changed = pyqtSignal()
     
     def __init__(self, db_manager):
-        super().__init__()
         self.db_manager = db_manager
-        self.clipboard = QGuiApplication.clipboard()
-        self.clipboard.dataChanged.connect(self._handle_clipboard_change)
         self.stop_event = Event()
         self.monitoring_thread = None
         self.track_images = True  # Can be toggled in settings
@@ -48,7 +40,7 @@ class ClipboardManager(QObject):
         """
         Load clipboard manager settings.
         """
-        # In a real app, load from QSettings or similar
+        # In a real app, load from config file or database
         # For now, set defaults
         self.track_images = True
     
@@ -88,78 +80,128 @@ class ClipboardManager(QObject):
         """
         Background thread for monitoring clipboard changes.
         """
-        while not self.stop_event.is_set():
-            # This is mostly a fallback in case the dataChanged signal misses something
-            # Most work is done in _handle_clipboard_change which is connected to the signal
-            time.sleep(0.5)  # Sleep to avoid high CPU usage
-    
-    def _handle_clipboard_change(self):
-        """
-        Handle clipboard data changes.
-        """
-        mime_data = self.clipboard.mimeData()
-        
-        if mime_data.hasText():
-            text = mime_data.text()
-            # Avoid duplicate entries for the same text
-            if text != self.previous_text and text.strip():
-                self.previous_text = text
-                timestamp = datetime.now()
-                self.db_manager.add_clipboard_item(text, ClipItemType.TEXT.value, timestamp)
-                logger.debug(f"New text added to clipboard history: {text[:50]}...")
-                self.clipboard_changed.emit()
-        
-        elif mime_data.hasImage() and self.track_images:
-            self._handle_clipboard_image(mime_data)
-    
-    def _handle_clipboard_image(self, mime_data):
-        """
-        Handle image data from clipboard.
-        """
-        image = mime_data.imageData()
-        if not image:
-            return
+        try:
+            # Try to use pyperclip for cross-platform clipboard access
+            import pyperclip
+            have_pyperclip = True
+        except ImportError:
+            have_pyperclip = False
+            logger.warning("pyperclip not available, using in-memory clipboard only")
             
-        # Convert QImage to bytes for storage and hashing
-        buffer = QBuffer()
-        buffer.open(QBuffer.ReadWrite)
-        image.save(buffer, "PNG")
-        image_bytes = buffer.data().data()
+        last_text = None
         
-        # Generate a simple hash of the image data to avoid duplicates
-        import hashlib
+        while not self.stop_event.is_set():
+            try:
+                if have_pyperclip:
+                    # Get current clipboard text
+                    try:
+                        current_text = pyperclip.paste()
+                        if current_text and current_text != last_text:
+                            # Avoid duplicate entries for the same text
+                            last_text = current_text
+                            timestamp = datetime.now()
+                            item_id = self.db_manager.add_clipboard_item(current_text.encode('utf-8'), ClipItemType.TEXT.value, timestamp)
+                            logger.debug(f"New text added to clipboard history: {current_text[:50]}...")
+                    except Exception as e:
+                        logger.error(f"Error getting clipboard content: {e}")
+            except Exception as e:
+                logger.error(f"Error in clipboard monitoring: {e}")
+                
+            # Sleep to avoid high CPU usage
+            time.sleep(1.0)
+    
+    def add_text_to_clipboard(self, text):
+        """
+        Add text to the clipboard and database.
+        
+        Args:
+            text: The text to add
+            
+        Returns:
+            The ID of the added item
+        """
+        if not text or text == self.previous_text:
+            return None
+            
+        self.previous_text = text
+        timestamp = datetime.now()
+        item_id = self.db_manager.add_clipboard_item(text.encode('utf-8'), ClipItemType.TEXT.value, timestamp)
+        
+        # Try to set system clipboard if pyperclip is available
+        try:
+            import pyperclip
+            pyperclip.copy(text)
+            logger.debug(f"Text set to system clipboard: {text[:50]}...")
+        except ImportError:
+            logger.debug("pyperclip not available, content stored in database only")
+        except Exception as e:
+            logger.error(f"Error setting system clipboard: {e}")
+            
+        return item_id
+    
+    def add_image_to_clipboard(self, image_bytes):
+        """
+        Add image to the clipboard and database.
+        
+        Args:
+            image_bytes: The binary image data
+            
+        Returns:
+            The ID of the added item
+        """
+        if not self.track_images or not image_bytes:
+            return None
+            
+        # Generate a hash of the image data to avoid duplicates
         image_hash = hashlib.md5(image_bytes).hexdigest()
         
-        if image_hash != self.previous_image_hash:
-            self.previous_image_hash = image_hash
-            timestamp = datetime.now()
-            self.db_manager.add_clipboard_item(image_bytes, ClipItemType.IMAGE.value, timestamp)
-            logger.debug(f"New image added to clipboard history (hash: {image_hash})")
-            self.clipboard_changed.emit()
-    
-    def set_clipboard_content(self, clipboard_item):
-        """
-        Set clipboard content from a database item.
-        """
-        mime_data = QMimeData()
+        if image_hash == self.previous_image_hash:
+            return None
+            
+        self.previous_image_hash = image_hash
+        timestamp = datetime.now()
+        item_id = self.db_manager.add_clipboard_item(image_bytes, ClipItemType.IMAGE.value, timestamp)
+        logger.debug(f"New image added to clipboard history (hash: {image_hash})")
         
+        # Note: Setting image to system clipboard requires GUI libraries
+        # in CLI mode, we just store it in the database
+        
+        return item_id
+    
+    def get_clipboard_content(self, clipboard_item):
+        """
+        Get clipboard content from a database item.
+        
+        Args:
+            clipboard_item: The database item
+            
+        Returns:
+            The content as text or bytes
+        """
+        if not clipboard_item or 'content' not in clipboard_item or clipboard_item['content'] is None:
+            logger.warning("Invalid clipboard item or missing content")
+            return None
+            
         if clipboard_item['type'] == ClipItemType.TEXT.value:
-            mime_data.setText(clipboard_item['content'])
-            self.previous_text = clipboard_item['content']
-            logger.debug(f"Set clipboard to text: {clipboard_item['content'][:50]}...")
+            try:
+                content = clipboard_item['content'].decode('utf-8', errors='replace')
+                # Try to set system clipboard if pyperclip is available
+                try:
+                    import pyperclip
+                    pyperclip.copy(content)
+                    logger.debug(f"Text set to system clipboard: {content[:50]}...")
+                except ImportError:
+                    logger.debug("pyperclip not available, content returned only")
+                except Exception as e:
+                    logger.error(f"Error setting system clipboard: {e}")
+                return content
+            except Exception as e:
+                logger.error(f"Error decoding text content: {e}")
+                return None
         
         elif clipboard_item['type'] == ClipItemType.IMAGE.value:
-            # Convert bytes to QImage
-            image = QImage()
-            image.loadFromData(clipboard_item['content'])
-            mime_data.setImageData(image)
-            
-            # Update previous image hash
-            import hashlib
-            self.previous_image_hash = hashlib.md5(clipboard_item['content']).hexdigest()
-            logger.debug(f"Set clipboard to image (hash: {self.previous_image_hash})")
+            # In CLI mode, we can't display images directly
+            # Just return the binary data
+            return clipboard_item['content']
         
-        # Temporarily disconnect the dataChanged signal to avoid recursion
-        self.clipboard.dataChanged.disconnect(self._handle_clipboard_change)
-        self.clipboard.setMimeData(mime_data)
-        self.clipboard.dataChanged.connect(self._handle_clipboard_change)
+        return None

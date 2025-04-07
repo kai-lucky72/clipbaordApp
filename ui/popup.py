@@ -3,17 +3,23 @@ Clipboard Popup Module
 
 This module implements the quick paste popup that appears when Ctrl+V is pressed.
 """
+import sys
+import os
 import logging
+from datetime import datetime
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
-    QListWidget, QListWidgetItem, QFrame, QApplication
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+    QPushButton, QListWidget, QListWidgetItem, QFrame,
+    QScrollArea, QSizePolicy, QToolButton
 )
-from PyQt5.QtGui import QIcon, QPixmap, QImage
-from PyQt5.QtCore import Qt, QSize, QTimer, pyqtSignal, QEvent, QObject
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QFont, QColor, QKeySequence, QCursor
+from PyQt5.QtCore import (
+    Qt, QSize, QEvent, QObject, pyqtSignal, QPoint, QRect, QTimer
+)
 
 from database import DatabaseManager
 from clipboard_manager import ClipboardManager
-from utils import resource_path
+from utils import resource_path, limit_text_length, format_timestamp
 
 logger = logging.getLogger(__name__)
 

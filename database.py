@@ -112,14 +112,10 @@ class DatabaseManager:
             
             result = []
             for item in items:
-                # Convert bytes to string for text content
-                content = item.content
-                if item.type == 'text':
-                    content = content.decode('utf-8')
-                
+                # Keep binary content as is for CLI version
                 result.append({
                     'id': item.id,
-                    'content': content,
+                    'content': item.content,
                     'type': item.type,
                     'timestamp': item.timestamp,
                     'favorite': item.favorite,
@@ -180,14 +176,10 @@ class DatabaseManager:
             
             result = []
             for item in items:
-                # Convert bytes to string for text content
-                content = item.content
-                if item.type == 'text':
-                    content = content.decode('utf-8')
-                
+                # Keep binary content as is for CLI version
                 result.append({
                     'id': item.id,
-                    'content': content,
+                    'content': item.content,
                     'type': item.type,
                     'timestamp': item.timestamp,
                     'favorite': item.favorite,
@@ -218,14 +210,10 @@ class DatabaseManager:
             if not item:
                 return None
             
-            # Convert bytes to string for text content
-            content = item.content
-            if item.type == 'text':
-                content = content.decode('utf-8')
-            
+            # Keep binary content as is for CLI version
             return {
                 'id': item.id,
-                'content': content,
+                'content': item.content,
                 'type': item.type,
                 'timestamp': item.timestamp,
                 'favorite': item.favorite,

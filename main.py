@@ -2,331 +2,353 @@
 """
 Advanced Clipboard Manager - CLI Version
 
-This is a command-line interface for the clipboard manager that works in environments
-where GUI applications are not supported.
+This is a command-line interface for the clipboard manager that allows
+basic clipboard history management without requiring a GUI.
 """
 import sys
 import os
 import logging
-import argparse
-import time
 import json
-import subprocess
-from datetime import datetime
 import threading
+import time
+import argparse
+import cmd
+from datetime import datetime
+from typing import Optional, Union, List
 
 from database import DatabaseManager
 from utils import setup_logger, limit_text_length, format_timestamp
-
-# In-memory clipboard for environments without system clipboard access
-_MEMORY_CLIPBOARD = ""
-
-# Clipboard utilities using system commands if available, otherwise use in-memory clipboard
-def clipboard_copy(text):
-    """Copy text to clipboard using system commands or in-memory fallback"""
-    global _MEMORY_CLIPBOARD
-    try:
-        if sys.platform == 'darwin':  # macOS
-            subprocess.run('pbcopy', universal_newlines=True, input=text)
-        elif sys.platform == 'win32':  # Windows
-            subprocess.run(['clip'], universal_newlines=True, input=text)
-        else:  # Linux/Unix
-            try:
-                subprocess.run(['xclip', '-selection', 'clipboard'], universal_newlines=True, input=text)
-            except FileNotFoundError:
-                # Fallback to in-memory clipboard in Replit environment
-                _MEMORY_CLIPBOARD = text
-                return True
-        return True
-    except Exception as e:
-        # Fallback to in-memory clipboard
-        _MEMORY_CLIPBOARD = text
-        logging.warning(f"Using in-memory clipboard: {e}")
-        return True
-
-def clipboard_paste():
-    """Paste from clipboard using system commands or in-memory fallback"""
-    global _MEMORY_CLIPBOARD
-    try:
-        if sys.platform == 'darwin':  # macOS
-            return subprocess.check_output('pbpaste', universal_newlines=True)
-        elif sys.platform == 'win32':  # Windows
-            # Using PowerShell to get clipboard contents
-            return subprocess.check_output(['powershell.exe', '-command', 'Get-Clipboard'], 
-                                          universal_newlines=True)
-        else:  # Linux/Unix
-            try:
-                return subprocess.check_output(['xclip', '-selection', 'clipboard', '-o'],
-                                              universal_newlines=True)
-            except FileNotFoundError:
-                # Fallback to in-memory clipboard in Replit environment
-                return _MEMORY_CLIPBOARD
-    except Exception as e:
-        # Fallback to in-memory clipboard
-        logging.warning(f"Using in-memory clipboard: {e}")
-        return _MEMORY_CLIPBOARD
 
 # Configure logging
 setup_logger()
 logger = logging.getLogger(__name__)
 
-class CliClipboardManager:
-    """A CLI-based clipboard manager"""
+class ClipboardManagerCLI(cmd.Cmd):
+    """Command-line interface for the clipboard manager"""
     
-    def __init__(self, db_manager):
-        self.db_manager = db_manager
-        self.last_clipboard_content = ""
+    intro = """
+    Advanced Clipboard Manager CLI
+    Type 'help' to see available commands.
+    """
+    prompt = "clipboard> "
+    
+    def __init__(self):
+        super().__init__()
+        
+        # Initialize database
+        self.db_manager = DatabaseManager()
+        logger.info("Database initialized")
+        
+        # In-memory clipboard for environments without system clipboard access
+        self.in_memory_clipboard = None
+        
+        # Status flags
         self.monitoring = False
         self.monitor_thread = None
-        logger.info("CLI Clipboard Manager initialized")
+        
+    def do_help(self, arg):
+        """Show help message"""
+        if arg:
+            # Show help for specific command
+            super().do_help(arg)
+        else:
+            # Show general help
+            print("""
+Available commands:
+
+help            - Show this help message
+start           - Start clipboard monitoring
+stop            - Stop clipboard monitoring
+recent [n]      - Show recent clipboard items (default 5)
+search <text>   - Search clipboard history
+add <text>      - Add text directly to clipboard history
+copy <id>       - Copy item with ID to clipboard
+favorite <id>   - Toggle favorite status for item
+delete <id>     - Delete item from history
+clear           - Clear clipboard history (keeps favorites)
+exit            - Exit the application
+            """)
     
-    def start_monitoring(self):
+    def do_start(self, arg):
         """Start clipboard monitoring"""
         if self.monitoring:
             print("Clipboard monitoring is already running.")
             return
         
         self.monitoring = True
-        self.monitor_thread = threading.Thread(target=self._monitor_clipboard)
-        self.monitor_thread.daemon = True
+        self.monitor_thread = threading.Thread(target=self._monitor_clipboard, daemon=True)
         self.monitor_thread.start()
-        print("Clipboard monitoring started. Press Ctrl+C to stop.")
+        print("Clipboard monitoring started.")
     
-    def stop_monitoring(self):
+    def do_stop(self, arg):
         """Stop clipboard monitoring"""
+        if not self.monitoring:
+            print("Clipboard monitoring is not running.")
+            return
+        
         self.monitoring = False
         if self.monitor_thread:
             self.monitor_thread.join(timeout=1.0)
         print("Clipboard monitoring stopped.")
     
-    def _monitor_clipboard(self):
-        """Monitor clipboard for changes"""
+    def do_recent(self, arg):
+        """Show recent clipboard items"""
         try:
-            while self.monitoring:
-                current_content = clipboard_paste()
-                
-                # Check if content has changed
-                if current_content != self.last_clipboard_content and current_content:
-                    self.last_clipboard_content = current_content
-                    # Store in database
-                    self.db_manager.add_clipboard_item(
-                        content=current_content, 
-                        item_type="text"
-                    )
-                    logger.info(f"New clipboard content saved: {limit_text_length(current_content, 30)}")
-                    print(f"\nNew clipboard content saved: {limit_text_length(current_content, 30)}")
-                
-                # Sleep to avoid high CPU usage
-                time.sleep(1.0)
-        except Exception as e:
-            logger.error(f"Error in clipboard monitoring: {e}")
-            print(f"Error: {e}")
-    
-    def display_recent_items(self, count=5):
-        """Display the most recent clipboard items"""
-        items = self.db_manager.get_recent_items(limit=count)
+            limit = int(arg) if arg else 5
+        except ValueError:
+            limit = 5
         
+        items = self.db_manager.get_recent_items(limit)
         if not items:
-            print("No clipboard history found.")
+            print("No clipboard history available.")
             return
         
-        print("\n=== Recent Clipboard Items ===")
-        for idx, item in enumerate(items):
-            timestamp = format_timestamp(item['timestamp'])
-            content = limit_text_length(item['content'].decode('utf-8', 'replace') if isinstance(item['content'], bytes) else item['content'], 60)
-            star = "★" if item['favorite'] else " "
-            print(f"{idx+1}. [{star}] {content} - {timestamp}")
+        print("\nRecent clipboard items:")
+        print("-" * 60)
+        for item in items:
+            self._print_item(item)
+        print("-" * 60)
     
-    def copy_item_to_clipboard(self, item_id):
-        """Copy an item from history to clipboard"""
-        item = self.db_manager.get_item_by_id(item_id)
-        
-        if not item:
-            print(f"No item found with ID {item_id}")
+    def do_search(self, arg):
+        """Search clipboard history"""
+        if not arg:
+            print("Error: Please provide search text.")
             return
         
-        content = item['content']
-        if isinstance(content, bytes):
+        items = self.db_manager.get_all_items(search_text=arg)
+        if not items:
+            print(f"No items found matching '{arg}'.")
+            return
+        
+        print(f"\nSearch results for '{arg}':")
+        print("-" * 60)
+        for item in items:
+            self._print_item(item)
+        print("-" * 60)
+    
+    def do_add(self, arg):
+        """Add text directly to clipboard history"""
+        if not arg:
+            print("Error: Please provide text to add.")
+            return
+        
+        item_id = self.db_manager.add_clipboard_item(arg.encode('utf-8'), 'text')
+        if item_id:
+            print(f"Added to clipboard history with ID {item_id}")
+            self.in_memory_clipboard = arg
+        else:
+            print("Failed to add item to clipboard history.")
+    
+    def do_copy(self, arg):
+        """Copy item with ID to clipboard"""
+        try:
+            item_id = int(arg)
+        except ValueError:
+            print("Error: Please provide a valid item ID.")
+            return
+        
+        item = self.db_manager.get_item_by_id(item_id)
+        if not item:
+            print(f"No item found with ID {item_id}.")
+            return
+            
+        if not item['content']:
+            print(f"Item with ID {item_id} has no content.")
+            return
+        
+        if item['type'] == 'text':
             try:
-                content = content.decode('utf-8')
-            except UnicodeDecodeError:
-                print("Cannot copy binary data to clipboard in CLI mode")
+                content = item['content'].decode('utf-8', errors='replace')
+                self.in_memory_clipboard = content
+                
+                # Try to set system clipboard if pyperclip is available
+                try:
+                    import pyperclip
+                    pyperclip.copy(content)
+                    print(f"Copied to system clipboard: {limit_text_length(content, 50)}")
+                except ImportError:
+                    print(f"Copied to in-memory clipboard: {limit_text_length(content, 50)}")
+                except Exception as e:
+                    logger.error(f"Error setting system clipboard: {e}")
+                    print(f"Copied to in-memory clipboard only: {limit_text_length(content, 50)}")
+            except Exception as e:
+                logger.error(f"Error decoding text content: {e}")
+                print(f"Error copying content: {e}")
+        else:
+            print("Copying images to clipboard is not supported in CLI mode.")
+    
+    def do_favorite(self, arg):
+        """Toggle favorite status for item"""
+        try:
+            item_id = int(arg)
+        except ValueError:
+            print("Error: Please provide a valid item ID.")
+            return
+        
+        status = self.db_manager.toggle_favorite(item_id)
+        if status is not None:
+            state = "added to" if status else "removed from"
+            print(f"Item {item_id} {state} favorites.")
+        else:
+            print(f"No item found with ID {item_id}.")
+    
+    def do_delete(self, arg):
+        """Delete item from history"""
+        try:
+            item_id = int(arg)
+        except ValueError:
+            print("Error: Please provide a valid item ID.")
+            return
+        
+        success = self.db_manager.delete_item(item_id)
+        if success:
+            print(f"Item {item_id} deleted from history.")
+        else:
+            print(f"No item found with ID {item_id}.")
+    
+    def do_clear(self, arg):
+        """Clear clipboard history"""
+        keep_favorites = True
+        if arg and arg.lower() == 'all':
+            keep_favorites = False
+            print("Warning: This will clear ALL items including favorites.")
+            confirm = input("Are you sure? (y/n): ")
+            if confirm.lower() != 'y':
+                print("Operation cancelled.")
                 return
         
-        clipboard_copy(content)
-        print(f"Copied item to clipboard: {limit_text_length(content, 30)}")
-    
-    def toggle_favorite(self, item_id):
-        """Toggle favorite status for an item"""
-        result = self.db_manager.toggle_favorite(item_id)
-        if result is not None:
-            status = "added to" if result else "removed from"
-            print(f"Item {status} favorites")
+        count = self.db_manager.clear_history(keep_favorites)
+        if keep_favorites:
+            print(f"Cleared {count} non-favorite items from history.")
         else:
-            print(f"No item found with ID {item_id}")
+            print(f"Cleared all {count} items from history.")
     
-    def delete_item(self, item_id):
-        """Delete an item from history"""
-        if self.db_manager.delete_item(item_id):
-            print(f"Deleted item {item_id}")
-        else:
-            print(f"No item found with ID {item_id}")
+    def do_exit(self, arg):
+        """Exit the application"""
+        if self.monitoring:
+            self.do_stop(None)
+        print("Exiting Clipboard Manager.")
+        return True
     
-    def search_items(self, search_text):
-        """Search for items in clipboard history"""
-        items = self.db_manager.get_all_items(search_text=search_text)
-        
-        if not items:
-            print(f"No items found matching '{search_text}'")
-            return
-        
-        print(f"\n=== Search Results for '{search_text}' ===")
-        for item in items:
-            timestamp = format_timestamp(item['timestamp'])
-            content = limit_text_length(item['content'].decode('utf-8', 'replace') if isinstance(item['content'], bytes) else item['content'], 60)
-            star = "★" if item['favorite'] else " "
-            print(f"ID {item['id']}: [{star}] {content} - {timestamp}")
-            
-    def add_manual_item(self, content):
-        """Manually add content to clipboard history"""
-        if not content:
-            print("Cannot add empty content")
-            return
-            
-        # Add to clipboard memory
-        clipboard_copy(content)
-        
-        # Store in database
-        item_id = self.db_manager.add_clipboard_item(
-            content=content,
-            item_type="text"
-        )
-        
-        print(f"Added to clipboard history with ID {item_id}")
-        return item_id
-
-def interactive_mode(clipboard_manager):
-    """Run the clipboard manager in interactive mode"""
-    print("\nWelcome to Advanced Clipboard Manager (CLI Edition)")
-    print("Type 'help' to see available commands\n")
-    
-    while True:
+    def _monitor_clipboard(self):
+        """Background thread for monitoring clipboard changes"""
         try:
-            command = input("\nclipboard> ").strip().lower()
+            # Implementation depends on the platform
+            # For CLI, this is a simplified version
             
-            if command == "help":
-                print("\nAvailable commands:")
-                print("  start       - Start clipboard monitoring")
-                print("  stop        - Stop clipboard monitoring")
-                print("  recent [n]  - Show recent clipboard items (default 5)")
-                print("  search <text> - Search clipboard history")
-                print("  add <text>  - Add text directly to clipboard history")
-                print("  copy <id>   - Copy item with ID to clipboard")
-                print("  favorite <id> - Toggle favorite status for item")
-                print("  delete <id> - Delete item from history")
-                print("  clear       - Clear clipboard history (keeps favorites)")
-                print("  exit        - Exit the application")
+            # Try to import pyperclip once at the start
+            try:
+                import pyperclip
+                have_pyperclip = True
+                logger.info("Using pyperclip for clipboard monitoring")
+            except ImportError:
+                have_pyperclip = False
+                logger.warning("pyperclip not available, using fallback monitoring")
             
-            elif command == "start":
-                clipboard_manager.start_monitoring()
-            
-            elif command == "stop":
-                clipboard_manager.stop_monitoring()
-            
-            elif command.startswith("recent"):
-                parts = command.split()
-                count = 5  # default
-                if len(parts) > 1 and parts[1].isdigit():
-                    count = int(parts[1])
-                clipboard_manager.display_recent_items(count)
-            
-            elif command.startswith("search "):
-                search_text = command[7:]
-                if search_text:
-                    clipboard_manager.search_items(search_text)
-                else:
-                    print("Please provide search text")
-                    
-            elif command.startswith("add "):
-                text = command[4:]
-                if text:
-                    clipboard_manager.add_manual_item(text)
-                else:
-                    print("Please provide text to add")
-            
-            elif command.startswith("copy "):
-                parts = command.split()
-                if len(parts) == 2 and parts[1].isdigit():
-                    clipboard_manager.copy_item_to_clipboard(int(parts[1]))
-                else:
-                    print("Usage: copy <id>")
-            
-            elif command.startswith("favorite "):
-                parts = command.split()
-                if len(parts) == 2 and parts[1].isdigit():
-                    clipboard_manager.toggle_favorite(int(parts[1]))
-                else:
-                    print("Usage: favorite <id>")
-            
-            elif command.startswith("delete "):
-                parts = command.split()
-                if len(parts) == 2 and parts[1].isdigit():
-                    clipboard_manager.delete_item(int(parts[1]))
-                else:
-                    print("Usage: delete <id>")
-            
-            elif command == "clear":
-                confirm = input("Clear clipboard history? (y/n): ").lower()
-                if confirm == 'y':
-                    count = clipboard_manager.db_manager.clear_history(keep_favorites=True)
-                    print(f"Cleared {count} items from history (favorites preserved)")
-            
-            elif command in ["exit", "quit"]:
-                clipboard_manager.stop_monitoring()
-                print("Exiting Advanced Clipboard Manager")
-                break
-            
-            else:
-                print("Unknown command. Type 'help' to see available commands.")
+            while self.monitoring:
+                # Try to get clipboard content
+                if have_pyperclip:
+                    try:
+                        content = pyperclip.paste()
+                        if content and content != self.in_memory_clipboard:
+                            self.in_memory_clipboard = content
+                            self.db_manager.add_clipboard_item(content.encode('utf-8'), 'text')
+                            logger.info("Clipboard content added to history")
+                    except Exception as e:
+                        logger.error(f"Error accessing clipboard: {e}")
                 
-        except KeyboardInterrupt:
-            print("\nInterrupted by user")
-            clipboard_manager.stop_monitoring()
-            break
+                time.sleep(1)
         except Exception as e:
-            logger.error(f"Error: {e}")
-            print(f"Error: {e}")
+            logger.error(f"Error in clipboard monitoring: {e}")
+            self.monitoring = False
+    
+    def _print_item(self, item):
+        """Format and print a clipboard item"""
+        if not item or 'id' not in item:
+            print("[Unknown item]")
+            return
+            
+        item_id = item['id']
+        favorite = "★" if item.get('favorite', False) else " "
+        timestamp = format_timestamp(item.get('timestamp', datetime.now()))
+        
+        if 'content' not in item or item['content'] is None:
+            print(f"[{item_id}] {favorite} {timestamp}: [No content]")
+            return
+            
+        if item['type'] == 'text':
+            try:
+                content = item['content'].decode('utf-8', errors='replace')
+                content_preview = limit_text_length(content, 60)
+                print(f"[{item_id}] {favorite} {timestamp}: {content_preview}")
+            except Exception as e:
+                logger.error(f"Error decoding text content: {e}")
+                print(f"[{item_id}] {favorite} {timestamp}: [Error: {str(e)}]")
+        else:
+            print(f"[{item_id}] {favorite} {timestamp}: [IMAGE]")
+
+def parse_arguments():
+    """Parse command-line arguments"""
+    parser = argparse.ArgumentParser(description="Advanced Clipboard Manager")
+    parser.add_argument("--monitor", action="store_true", help="Start clipboard monitoring on startup")
+    parser.add_argument("--recent", type=int, help="Display N most recent clipboard items and exit")
+    return parser.parse_args()
 
 def main():
-    parser = argparse.ArgumentParser(description="Advanced Clipboard Manager - CLI Edition")
-    parser.add_argument("--monitor", action="store_true", help="Start clipboard monitoring on startup")
-    parser.add_argument("--recent", type=int, help="Display recent clipboard items and exit")
+    """Application entry point"""
+    args = parse_arguments()
     
-    args = parser.parse_args()
-    
-    # Initialize database manager
-    db_manager = DatabaseManager()
-    
-    # Initialize clipboard manager
-    clipboard_manager = CliClipboardManager(db_manager)
-    
-    # Handle command line options
+    # Simple mode: just show recent items and exit
     if args.recent:
-        clipboard_manager.display_recent_items(args.recent)
+        db_manager = DatabaseManager()
+        items = db_manager.get_recent_items(args.recent)
+        if not items:
+            print("No clipboard history available.")
+            return
+        
+        print("\nRecent clipboard items:")
+        print("-" * 60)
+        for item in items:
+            if not item or 'id' not in item:
+                print("[Unknown item]")
+                continue
+                
+            item_id = item['id']
+            favorite = "★" if item.get('favorite', False) else " "
+            timestamp = format_timestamp(item.get('timestamp', datetime.now()))
+            
+            if 'content' not in item or item['content'] is None:
+                print(f"[{item_id}] {favorite} {timestamp}: [No content]")
+                continue
+                
+            if item['type'] == 'text':
+                try:
+                    content = item['content'].decode('utf-8', errors='replace')
+                    content_preview = limit_text_length(content, 60)
+                    print(f"[{item_id}] {favorite} {timestamp}: {content_preview}")
+                except Exception as e:
+                    logger.error(f"Error decoding text content: {e}")
+                    print(f"[{item_id}] {favorite} {timestamp}: [Error: {str(e)}]")
+            else:
+                print(f"[{item_id}] {favorite} {timestamp}: [IMAGE]")
+        print("-" * 60)
         return
     
-    if args.monitor:
-        clipboard_manager.start_monitoring()
-    
-    # Enter interactive mode
+    # Interactive mode
     try:
-        interactive_mode(clipboard_manager)
+        cli = ClipboardManagerCLI()
+        
+        # Auto-start monitoring if requested
+        if args.monitor:
+            cli.do_start(None)
+        
+        # Start command loop
+        cli.cmdloop()
+    except KeyboardInterrupt:
+        print("\nExiting Clipboard Manager.")
     except Exception as e:
-        logger.error(f"Error in interactive mode: {e}")
+        logger.error(f"Error in CLI application: {e}")
         print(f"Error: {e}")
-    finally:
-        # Ensure monitoring is stopped
-        clipboard_manager.stop_monitoring()
 
 if __name__ == "__main__":
     main()

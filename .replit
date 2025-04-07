@@ -13,10 +13,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "ClipboardManagerApp"
+args = "ClipboardManagerCLI"
 
 [[workflows.workflow]]
-name = "ClipboardManagerApp"
+name = "ClipboardManagerCLI"
 author = "agent"
 
 [workflows.workflow.metadata]

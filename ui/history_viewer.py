@@ -3,21 +3,24 @@ History Viewer Module
 
 This module implements the full clipboard history viewer.
 """
+import sys
+import os
 import logging
 from datetime import datetime
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, 
-    QLineEdit, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
-    QMenu, QAction, QCheckBox, QTabWidget, QSplitter, QTextEdit, QFileDialog,
-    QMessageBox, QComboBox
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, 
+    QPushButton, QTableWidget, QTableWidgetItem, QHeaderView, QLineEdit,
+    QComboBox, QToolBar, QAction, QSplitter, QTextEdit, QFileDialog,
+    QCheckBox, QMenu, QMessageBox, QSizePolicy, QAbstractItemView,
+    QTabWidget
 )
-from PyQt5.QtGui import QIcon, QPixmap, QImage
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QByteArray, QBuffer
+from PyQt5.QtGui import QIcon, QPixmap, QImage, QFont, QColor
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QPoint, QByteArray, QBuffer
 
 from database import DatabaseManager
 from clipboard_manager import ClipboardManager
 from models import ClipItemType
-from utils import resource_path
+from utils import format_timestamp, limit_text_length, resource_path
 
 logger = logging.getLogger(__name__)
 
