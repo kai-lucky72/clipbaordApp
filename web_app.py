@@ -251,6 +251,69 @@ def delete_item(item_id):
     else:
         return jsonify({'error': 'Failed to delete item'}), 500
 
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    """Simple endpoint to check if the API is available"""
+    return jsonify({
+        'success': True,
+        'message': 'Advanced Clipboard Manager API is running',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0'
+    })
+
+@app.route('/api/system/info', methods=['GET'])
+def system_info():
+    """Get system information for the browser extension"""
+    all_items = db_manager.get_all_items()
+    text_items = [item for item in all_items if item.get('type') == ClipItemType.TEXT.value]
+    image_items = [item for item in all_items if item.get('type') == ClipItemType.IMAGE.value]
+    favorite_items = [item for item in all_items if item.get('favorite')]
+    
+    # Get unique tags
+    all_tags = set()
+    for item in all_items:
+        if 'tags' in item and item['tags']:
+            try:
+                if isinstance(item['tags'], list):
+                    all_tags.update(item['tags'])
+                else:
+                    tags = json.loads(item['tags'])
+                    all_tags.update(tags)
+            except Exception as e:
+                logger.error(f"Error parsing tags: {e}")
+    
+    return jsonify({
+        'success': True,
+        'stats': {
+            'total_items': len(all_items),
+            'text_items': len(text_items),
+            'image_items': len(image_items),
+            'favorite_items': len(favorite_items),
+            'tags_count': len(all_tags)
+        },
+        'server_info': {
+            'version': '1.0.0',
+            'monitoring_active': clipboard_manager._monitoring_thread is not None and clipboard_manager._monitoring_thread.is_alive(),
+            'track_images': clipboard_manager._track_images,
+            'timestamp': datetime.now().isoformat()
+        }
+    })
+
+@app.route('/api/extension/copy', methods=['POST'])
+def extension_copy():
+    """Copy text sent from the browser extension to the clipboard and database"""
+    text = request.json.get('text')
+    
+    if not text:
+        return jsonify({'error': 'Text is required'}), 400
+        
+    item_id = clipboard_manager.add_text_to_clipboard(text)
+    
+    if item_id:
+        return jsonify({'success': True, 'item_id': item_id})
+    else:
+        return jsonify({'error': 'Failed to add text to clipboard'}), 500
+
 def main():
     """Run the web application"""
     # Start the clipboard monitoring service

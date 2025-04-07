@@ -1,0 +1,50 @@
+{
+  "manifest_version": 2,
+  "name": "Advanced Clipboard Manager",
+  "version": "1.0.0",
+  "description": "Access and manage your clipboard history directly from your browser",
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "browser_action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    },
+    "default_title": "Advanced Clipboard Manager"
+  },
+  "permissions": [
+    "clipboardRead",
+    "clipboardWrite",
+    "storage",
+    "contextMenus",
+    "notifications",
+    "tabs",
+    "http://localhost:5000/"
+  ],
+  "background": {
+    "scripts": ["scripts/background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["scripts/content.js"]
+    }
+  ],
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+C",
+        "mac": "Command+Shift+C"
+      },
+      "description": "Open Clipboard Manager"
+    }
+  },
+  "web_accessible_resources": [
+    "images/*"
+  ]
+}

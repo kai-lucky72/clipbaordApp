@@ -1,12 +1,12 @@
 # Advanced Clipboard Manager
 
-A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features GUI, CLI, and Quick Paste Popup interfaces, making it versatile for different environments and user preferences.
+A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features GUI, CLI, Quick Paste Popup, Web Interface, and Browser Extension, making it versatile for different environments and user preferences.
 
 ## Features
 
 - **Clipboard Monitoring**: Continuously tracks text and images copied to your clipboard
 - **Database Storage**: Stores clipboard history in a PostgreSQL database
-- **Multiple Interfaces**: GUI, CLI, and Quick Paste Popup interfaces available
+- **Multiple Interfaces**: GUI, CLI, Quick Paste Popup, Web Interface, and Browser Extension
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Favorites**: Mark frequently used items as favorites for quick access
 - **Search Functionality**: Quickly find items in your clipboard history
@@ -14,6 +14,8 @@ A cross-platform clipboard manager that tracks your clipboard history and provid
 - **Image Support**: Store, view, and save images from your clipboard
 - **Preview Panel**: Preview text and images before copying
 - **Quick Paste Popup**: Access recent clipboard items through a lightweight popup interface
+- **Web Interface**: Access your clipboard history through a browser
+- **Browser Extension**: Seamless integration with Chrome and Chromium-based browsers
 
 ## Requirements
 
@@ -23,6 +25,7 @@ A cross-platform clipboard manager that tracks your clipboard history and provid
 - PostgreSQL database
 - Pillow (for image support)
 - Tkinter (included in standard Python library)
+- Flask (for web interface)
 
 ## Usage
 
@@ -40,6 +43,9 @@ python clipboard_app.py --cli
 
 # Start the Quick Paste Popup
 python clipboard_app.py --popup
+
+# Start the Web Interface
+python web_app.py
 ```
 
 ### Running the CLI Directly
@@ -112,6 +118,45 @@ To use the Quick Paste Popup as a standalone application:
 python clipboard_app.py --popup
 ```
 
+## Web Interface
+
+The Web Interface provides browser-based access to your clipboard history:
+
+- Access from any device with a web browser
+- Modern, responsive design
+- Full clipboard history browsing and management
+- Search and filter capabilities
+- Tag management with category tags
+- Syntax highlighting for code snippets
+- Direct text input feature
+
+To start the web interface:
+
+```bash
+python web_app.py
+```
+
+Then navigate to `http://localhost:5000` in your web browser.
+
+## Browser Extension
+
+The Browser Extension integrates the Advanced Clipboard Manager with your browser:
+
+- Available for Chrome and other Chromium-based browsers (Edge, Brave, Opera)
+- Save selected text from web pages to clipboard history
+- Paste clipboard items directly into web forms
+- Access and manage your clipboard history without leaving the browser
+- Tag and favorite management
+- Syntax highlighting for code snippets
+
+To install the browser extension:
+
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" by toggling the switch in the top-right corner
+3. Click on "Load unpacked" button
+4. Select the `browser_extension` folder
+5. Ensure the Advanced Clipboard Manager app is running with the web interface active
+
 ## In-Memory Clipboard
 
 In environments where system clipboard tools (like xclip on Linux) are not available, the application uses an in-memory clipboard. This allows you to still save and retrieve clipboard items, although they won't be accessible to other applications until you copy them to the system clipboard.
@@ -156,7 +201,6 @@ The GUI interface provides a user-friendly way to interact with your clipboard h
 The following features are planned for future releases:
 
 - **Encryption**: End-to-end encryption of sensitive clipboard data
-- **Browser Extension**: Seamless integration with web browsers
 - **Cloud Synchronization**: Sync clipboard history across multiple devices
 - **Custom Categories**: Organize clipboard items beyond simple tags
 - **Export/Import**: Export and import clipboard history
