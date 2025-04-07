@@ -45,21 +45,104 @@ class DatabaseManager:
                 db_path = app_dir / "clipboard_history.db"
                 db_url = f'sqlite:///{db_path}'
         
+        # Check if running on Vercel
+        is_vercel = os.environ.get('VERCEL', '') == 'true' or os.environ.get('VERCEL_URL', '')
+        
         try:
-            # Fix for Vercel - PostgreSQL URL compatibility
-            # Vercel's PostgreSQL URLs use "postgres://", but SQLAlchemy needs "postgresql://"
-            if db_url and db_url.startswith('postgres://'):
-                db_url = db_url.replace('postgres://', 'postgresql://', 1)
+            # Log database URL info (masked for security)
+            if db_url:
+                # Only log a masked version
+                if '://' in db_url:
+                    parts = db_url.split('://')
+                    if '@' in parts[1]:
+                        auth_part = parts[1].split('@')[0]
+                        if ':' in auth_part:
+                            user = auth_part.split(':')[0]
+                            masked_url = f"{parts[0]}://{user}:****@{parts[1].split('@')[1]}"
+                            logger.info(f"Using database URL: {masked_url}")
+                        else:
+                            logger.info("Using database URL (no password in URL)")
+                    else:
+                        logger.info("Using database URL (no auth in URL)")
+                else:
+                    logger.info("Using database URL (unusual format)")
+                
+                # Fix for Vercel - PostgreSQL URL compatibility
+                # Vercel's PostgreSQL URLs use "postgres://", but SQLAlchemy needs "postgresql://"
+                if db_url.startswith('postgres://'):
+                    db_url = db_url.replace('postgres://', 'postgresql://', 1)
+                    logger.info("Fixed PostgreSQL URL format from 'postgres://' to 'postgresql://'")
+            else:
+                logger.warning("No database URL provided, will attempt to use SQLite fallback")
             
-            # Initialize SQLAlchemy engine and session
-            self.engine = create_engine(db_url)
-            Base.metadata.create_all(self.engine)
+            # Add connection pool settings and echo for debugging
+            engine_args = {
+                'pool_recycle': 280,  # Recycle connections before Vercel's 5-minute timeout
+                'pool_pre_ping': True,  # Check connection validity before using
+                'pool_timeout': 30,    # Timeout after 30 seconds when waiting for a connection 
+                'connect_args': {'connect_timeout': 10},  # Connection timeout in seconds
+                'echo': False  # Set to True for SQL query logging (only during debugging)
+            }
+            
+            # Initialize SQLAlchemy engine with optimized settings
+            logger.info(f"Creating database engine...")
+            self.engine = create_engine(db_url, **engine_args)
+            logger.info(f"Database engine created with {self.engine.name} dialect")
+            
+            # In serverless environment, we don't want to create tables automatically
+            # as it can cause performance issues and race conditions
+            if not is_vercel:
+                logger.info("Creating database tables if they don't exist...")
+                Base.metadata.create_all(self.engine)
+            else:
+                # On Vercel, just check if we can connect to the database
+                logger.info("Running on Vercel - testing database connection...")
+                try:
+                    conn = self.engine.connect()
+                    # Execute a simple query to verify the connection is working
+                    conn.execute(sqlalchemy.text("SELECT 1"))
+                    conn.close()
+                    logger.info("Successfully connected to database and verified query execution")
+                except Exception as conn_error:
+                    logger.error(f"Database connection test failed: {conn_error}")
+                    raise  # Re-raise to be caught by outer try/except
+            
+            # Create session factory
             self.Session = sessionmaker(bind=self.engine)
             
             logger.info(f"Database initialized successfully using {self.engine.name}")
+            
+            # Test creating a session to verify connection pool
+            test_session = self.Session()
+            test_session.close()
+            logger.info("Session factory verified")
+            
         except Exception as e:
             logger.error(f"Error initializing database: {e}")
-            raise
+            
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
+            
+            # Check for common connection errors
+            error_str = str(e).lower()
+            if "timeout" in error_str:
+                logger.error("Database connection timeout - check network connectivity and firewall settings")
+            elif "authentication" in error_str or "password" in error_str:
+                logger.error("Database authentication error - check credentials")
+            elif "connect" in error_str:
+                logger.error("Database connection error - check host and port settings")
+            elif "role" in error_str:
+                logger.error("Database role/user error - check database user permissions")
+                
+            if is_vercel:
+                # On Vercel, we don't want to crash the application if DB connection fails
+                # Instead, we'll initialize with a more limited set of functions
+                logger.warning("Initializing in limited mode due to database connection failure")
+                self.engine = None
+                self.Session = None
+            else:
+                # In development, we want to fail fast if DB connection is not working
+                raise
 
     def add_clipboard_item(self, content, item_type, timestamp=None):
         """

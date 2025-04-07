@@ -4,198 +4,1042 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Clipboard Manager</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github.min.css">
+    <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        #sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+        #main-content {
+            margin-left: var(--sidebar-width);
+            padding: 1.5rem;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .nav-link {
+            color: rgba(255,255,255,0.75);
+            transition: all 0.2s;
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+        }
+        .nav-link i {
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+        .nav-section-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 0.5rem;
+            padding: 0 0.75rem;
+        }
+        .clipboard-item {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .clipboard-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .clipboard-item .timestamp {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .clipboard-item .preview {
+            margin: 0.75rem 0;
+            white-space: pre-line;
+            max-height: 150px;
+            overflow: hidden;
+        }
+        .clipboard-item .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .clipboard-item .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        .clipboard-item .tag {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .clipboard-item .favorite-icon {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            color: #ffc107;
+            cursor: pointer;
+        }
+        /* Styles for code highlighting */
+        pre {
+            margin: 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 0.5rem;
+            max-height: 300px;
+            overflow: auto;
+        }
+        .code-container {
+            position: relative;
+        }
+        .code-language {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 0 0 0 4px;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .clipboard-item:hover .copy-btn {
+            opacity: 1;
+        }
+        /* Loading spinner */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-clipboard-list"></i>
-                    <span>ClipManager</span>
-                </div>
-            </div>
-            <div class="sidebar-content">
-                <div class="filter-section">
-                    <div class="filter-heading">Filter By</div>
-                    <div class="filter-options">
-                        <div class="filter-option active" data-filter="all">
-                            <i class="fas fa-layer-group"></i> All Items
-                        </div>
-                        <div class="filter-option" data-filter="text">
-                            <i class="fas fa-font"></i> Text Only
-                        </div>
-                        <div class="filter-option" data-filter="image">
-                            <i class="fas fa-image"></i> Images Only
-                        </div>
-                        <div class="filter-option" data-filter="favorites">
-                            <i class="fas fa-star"></i> Favorites
-                        </div>
-                    </div>
-                </div>
-                <div class="actions-section">
-                    <button class="action-btn" id="clearHistoryBtn">
-                        <i class="fas fa-trash-alt"></i> Clear History
-                    </button>
-                    <button class="action-btn" id="manageTagsBtn">
-                        <i class="fas fa-tags"></i> Manage Tags
-                    </button>
-                    <div class="add-text-section">
-                        <button class="action-btn add-text-btn" id="addTextBtn">
-                            <i class="fas fa-plus"></i> Add Text
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <div id="sidebar">
+        <div class="logo">
+            Clipboard Manager
         </div>
         
-        <div class="main-content">
-            <div class="header">
-                <div class="search-container">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" class="search-input" placeholder="Search clipboard items...">
-                    <button id="searchBtn" class="search-button">Search</button>
-                </div>
-            </div>
-            
-            <div class="content-area">
-                <div class="items-container">
-                    <div class="items-header">
-                        <h3>Clipboard History</h3>
-                        <div class="items-count">
-                            <span id="itemsCount">0</span> items
-                        </div>
-                    </div>
-                    <div class="items-list" id="itemsList">
-                        <!-- Items will be loaded here dynamically -->
-                        <div class="loading-indicator">
-                            <div class="spinner"></div>
-                            <p>Loading clipboard items...</p>
-                        </div>
-                    </div>
-                    <div class="pagination-container">
-                        <nav aria-label="Clipboard history pagination">
-                            <ul class="pagination justify-content-center mb-0" id="pagination">
-                                <!-- Pagination will be added here -->
-                            </ul>
-                        </nav>
-                    </div>
-                </div>
-                
-                <div class="preview-container">
-                    <div class="preview-header">
-                        <h3>Preview</h3>
-                        <div id="itemActions" class="preview-actions d-none">
-                            <button class="action-icon" id="copyBtn" title="Copy to clipboard">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button class="action-icon" id="favoriteBtn" title="Toggle favorite">
-                                <i class="far fa-star"></i>
-                            </button>
-                            <button class="action-icon" id="tagsBtn" title="Manage tags">
-                                <i class="fas fa-tags"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="preview-content" id="previewContent">
-                        <div class="empty-preview">
-                            <i class="fas fa-clipboard-check"></i>
-                            <p>Select an item to preview its content</p>
-                        </div>
-                    </div>
-                    <div class="preview-metadata" id="itemMetadata">
-                        <!-- Item metadata will be shown here -->
+        <div class="nav-section">
+            <div class="nav-section-title">View</div>
+            <a href="#" class="nav-link active" id="view-all">
+                <i class="fas fa-clipboard-list"></i> All Items
+            </a>
+            <a href="#" class="nav-link" id="view-text">
+                <i class="fas fa-font"></i> Text Only
+            </a>
+            <a href="#" class="nav-link" id="view-images">
+                <i class="fas fa-image"></i> Images Only
+            </a>
+            <a href="#" class="nav-link" id="view-favorites">
+                <i class="fas fa-star"></i> Favorites
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">Tools</div>
+            <a href="#" class="nav-link" id="open-search">
+                <i class="fas fa-search"></i> Search
+            </a>
+            <a href="#" class="nav-link" id="add-text">
+                <i class="fas fa-plus"></i> Add Text
+            </a>
+            <a href="#" class="nav-link" id="clear-history">
+                <i class="fas fa-trash"></i> Clear History
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">Tags</div>
+            <div id="tags-list">
+                <div class="loading-spinner">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Tag Management Modal -->
-    <div class="modal fade" id="tagsModal" tabindex="-1" aria-labelledby="tagsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    
+    <div id="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 id="current-view-title">All Clipboard Items</h1>
+            <div class="input-group" style="max-width: 300px;">
+                <input type="text" class="form-control" placeholder="Search..." id="search-input">
+                <button class="btn btn-outline-secondary" type="button" id="search-button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="clipboard-items">
+            <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-center mt-4" id="pagination-controls">
+            <!-- Pagination controls will be added here dynamically -->
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal fade" id="add-text-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="tagsModalLabel">Manage Tags</h5>
+                    <h5 class="modal-title">Add Text to Clipboard</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-4">
-                        <label for="currentTagsList" class="form-label fw-bold">Current Tags:</label>
-                        <div id="currentTagsList" class="d-flex flex-wrap gap-2">
-                            <!-- Current tags will be added here -->
-                            <span class="text-muted">No tags</span>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label for="newTagInput" class="form-label fw-bold">Add New Tag:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="newTagInput" placeholder="Enter tag name">
-                            <div class="input-group-text">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="categoryTagCheck">
-                                    <label class="form-check-label" for="categoryTagCheck">
-                                        Category Tag
-                                    </label>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" id="addTagBtn">Add</button>
-                        </div>
-                        <div class="form-text">Use # prefix for category tags (e.g., #work, #personal)</div>
-                    </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Suggested Tags:</label>
-                        <div id="suggestedTags" class="d-flex flex-wrap gap-2">
-                            <!-- Suggested tags will be added here -->
-                            <span class="text-muted">Loading tags...</span>
+                        <label for="new-text" class="form-label">Text Content</label>
+                        <textarea class="form-control" id="new-text" rows="5" placeholder="Enter text to add to clipboard..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submit-new-text">Add to Clipboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="item-detail-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Clipboard Item Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detail-content">
+                        <!-- Content will be added dynamically -->
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>Tags</h6>
+                        <div id="detail-tags" class="mb-2">
+                            <!-- Tags will be added dynamically -->
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Add tag..." id="new-tag-input">
+                            <button class="btn btn-outline-secondary" type="button" id="add-tag-button">Add</button>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="delete-item-button">Delete</button>
+                    <button type="button" class="btn btn-primary" id="copy-item-button">Copy to Clipboard</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Add Text Modal -->
-    <div class="modal fade" id="addTextModal" tabindex="-1" aria-labelledby="addTextModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    
+    <div class="modal fade" id="clear-history-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addTextModalLabel">Add Text to Clipboard</h5>
+                    <h5 class="modal-title">Clear Clipboard History</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="textToAdd" class="form-label fw-bold">Text Content:</label>
-                        <textarea class="form-control" id="textToAdd" rows="5" placeholder="Enter text to add to clipboard..."></textarea>
+                    <p>Are you sure you want to clear your clipboard history?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="keep-favorites-check" checked>
+                        <label class="form-check-label" for="keep-favorites-check">
+                            Keep favorite items
+                        </label>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmAddTextBtn">Add to Clipboard</button>
+                    <button type="button" class="btn btn-danger" id="confirm-clear-history">Clear History</button>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="toast-container" class="toast-container">
+            <!-- Toasts will be added here dynamically -->
+        </div>
+    </div>
 
-    <!-- Toast Container for Notifications -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Highlight.js for code syntax highlighting -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
-    <!-- Custom JavaScript -->
-    <script src="{{ url_for('static', filename='js/clipboard-manager.js') }}"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/lib/highlight.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // State
+            let currentPage = 1;
+            let totalPages = 1;
+            let currentFilter = 'all';
+            let searchQuery = '';
+            let currentItemId = null;
+            
+            // Cache DOM elements
+            const clipboardItemsContainer = document.getElementById('clipboard-items');
+            const paginationControls = document.getElementById('pagination-controls');
+            const currentViewTitle = document.getElementById('current-view-title');
+            const tagsListContainer = document.getElementById('tags-list');
+            const searchInput = document.getElementById('search-input');
+            const searchButton = document.getElementById('search-button');
+            
+            // Modals
+            const addTextModal = new bootstrap.Modal(document.getElementById('add-text-modal'));
+            const itemDetailModal = new bootstrap.Modal(document.getElementById('item-detail-modal'));
+            const clearHistoryModal = new bootstrap.Modal(document.getElementById('clear-history-modal'));
+            
+            // Initialize
+            loadItems();
+            loadTags();
+            
+            // View filters
+            document.getElementById('view-all').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveNavLink(this);
+                currentFilter = 'all';
+                currentViewTitle.textContent = 'All Clipboard Items';
+                currentPage = 1;
+                loadItems();
+            });
+            
+            document.getElementById('view-text').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveNavLink(this);
+                currentFilter = 'text';
+                currentViewTitle.textContent = 'Text Clipboard Items';
+                currentPage = 1;
+                loadItems();
+            });
+            
+            document.getElementById('view-images').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveNavLink(this);
+                currentFilter = 'image';
+                currentViewTitle.textContent = 'Image Clipboard Items';
+                currentPage = 1;
+                loadItems();
+            });
+            
+            document.getElementById('view-favorites').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActiveNavLink(this);
+                currentFilter = 'favorites';
+                currentViewTitle.textContent = 'Favorite Clipboard Items';
+                currentPage = 1;
+                loadItems();
+            });
+            
+            // Tools
+            document.getElementById('open-search').addEventListener('click', function(e) {
+                e.preventDefault();
+                searchInput.focus();
+            });
+            
+            document.getElementById('add-text').addEventListener('click', function(e) {
+                e.preventDefault();
+                document.getElementById('new-text').value = '';
+                addTextModal.show();
+            });
+            
+            document.getElementById('clear-history').addEventListener('click', function(e) {
+                e.preventDefault();
+                clearHistoryModal.show();
+            });
+            
+            // Search
+            searchButton.addEventListener('click', function() {
+                searchQuery = searchInput.value.trim();
+                currentPage = 1;
+                loadItems();
+            });
+            
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchQuery = searchInput.value.trim();
+                    currentPage = 1;
+                    loadItems();
+                }
+            });
+            
+            // Modal actions
+            document.getElementById('submit-new-text').addEventListener('click', function() {
+                const text = document.getElementById('new-text').value.trim();
+                if (text) {
+                    addText(text);
+                }
+            });
+            
+            document.getElementById('confirm-clear-history').addEventListener('click', function() {
+                const keepFavorites = document.getElementById('keep-favorites-check').checked;
+                clearHistory(keepFavorites);
+            });
+            
+            document.getElementById('add-tag-button').addEventListener('click', function() {
+                if (currentItemId) {
+                    const tag = document.getElementById('new-tag-input').value.trim();
+                    if (tag) {
+                        addTag(currentItemId, tag);
+                    }
+                }
+            });
+            
+            document.getElementById('delete-item-button').addEventListener('click', function() {
+                if (currentItemId) {
+                    deleteItem(currentItemId);
+                }
+            });
+            
+            document.getElementById('copy-item-button').addEventListener('click', function() {
+                if (currentItemId) {
+                    copyItem(currentItemId);
+                }
+            });
+            
+            // Functions
+            function loadItems() {
+                showLoadingSpinner(clipboardItemsContainer);
+                
+                let url = `/api/items?page=${currentPage}`;
+                
+                if (currentFilter !== 'all') {
+                    url += `&filter=${currentFilter}`;
+                }
+                
+                if (searchQuery) {
+                    url += `&search=${encodeURIComponent(searchQuery)}`;
+                }
+                
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderItems(data.items);
+                        totalPages = data.total_pages;
+                        renderPagination(data.page, data.total_pages);
+                    })
+                    .catch(error => {
+                        console.error('Error loading items:', error);
+                        showToast('Error loading clipboard items', 'danger');
+                        clipboardItemsContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                Failed to load clipboard items. Please try again later.
+                            </div>
+                        `;
+                    });
+            }
+            
+            function loadTags() {
+                showLoadingSpinner(tagsListContainer);
+                
+                fetch('/api/tags')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderTags(data.tags);
+                    })
+                    .catch(error => {
+                        console.error('Error loading tags:', error);
+                        tagsListContainer.innerHTML = `
+                            <div class="text-white-50">
+                                Failed to load tags.
+                            </div>
+                        `;
+                    });
+            }
+            
+            function renderItems(items) {
+                if (!items || items.length === 0) {
+                    clipboardItemsContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            No clipboard items found.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                clipboardItemsContainer.innerHTML = '';
+                
+                items.forEach(item => {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'clipboard-item';
+                    itemElement.dataset.id = item.id;
+                    
+                    // Check if it's a code snippet
+                    let content = '';
+                    if (item.type === 'text') {
+                        if (isCodeSnippet(item.content)) {
+                            const language = detectLanguage(item.content);
+                            content = `
+                                <div class="code-container">
+                                    <div class="code-language">${language}</div>
+                                    <pre><code class="${language}">${escapeHtml(item.content)}</code></pre>
+                                </div>
+                            `;
+                        } else {
+                            content = `<div class="preview">${escapeHtml(item.preview)}</div>`;
+                        }
+                    } else {
+                        content = `<div class="text-center"><img src="${item.image_data}" class="img-fluid" style="max-height: 150px;" alt="Clipboard image"></div>`;
+                    }
+                    
+                    // Construct tags HTML
+                    let tagsHtml = '';
+                    if (item.tags && item.tags.length > 0) {
+                        tagsHtml = '<div class="tags mt-2">';
+                        item.tags.forEach(tag => {
+                            tagsHtml += `<span class="tag">${escapeHtml(tag)}</span>`;
+                        });
+                        tagsHtml += '</div>';
+                    }
+                    
+                    itemElement.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="timestamp">${item.timestamp}</div>
+                            <i class="fas ${item.favorite ? 'fa-star' : 'fa-star-o'} favorite-icon" data-id="${item.id}"></i>
+                        </div>
+                        ${content}
+                        ${tagsHtml}
+                        <div class="actions mt-2">
+                            <button class="btn btn-sm btn-outline-primary view-item" data-id="${item.id}">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-outline-success copy-item" data-id="${item.id}">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    `;
+                    
+                    clipboardItemsContainer.appendChild(itemElement);
+                    
+                    // Initialize syntax highlighting for code blocks
+                    itemElement.querySelectorAll('pre code').forEach(block => {
+                        hljs.highlightElement(block);
+                    });
+                });
+                
+                // Add event listeners to the newly created elements
+                document.querySelectorAll('.favorite-icon').forEach(icon => {
+                    icon.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        toggleFavorite(id);
+                    });
+                });
+                
+                document.querySelectorAll('.view-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        viewItemDetails(id);
+                    });
+                });
+                
+                document.querySelectorAll('.copy-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        copyItem(id);
+                    });
+                });
+                
+                document.querySelectorAll('.clipboard-item').forEach(item => {
+                    item.addEventListener('dblclick', function() {
+                        const id = this.dataset.id;
+                        viewItemDetails(id);
+                    });
+                });
+            }
+            
+            function renderPagination(currentPage, totalPages) {
+                if (totalPages <= 1) {
+                    paginationControls.innerHTML = '';
+                    return;
+                }
+                
+                let html = '<nav aria-label="Clipboard pagination"><ul class="pagination">';
+                
+                // Previous button
+                html += `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+                    </li>
+                `;
+                
+                // Page numbers
+                const maxPages = 5;
+                let startPage = Math.max(1, currentPage - Math.floor(maxPages / 2));
+                let endPage = Math.min(totalPages, startPage + maxPages - 1);
+                
+                if (endPage - startPage + 1 < maxPages) {
+                    startPage = Math.max(1, endPage - maxPages + 1);
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>
+                    `;
+                }
+                
+                // Next button
+                html += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+                    </li>
+                `;
+                
+                html += '</ul></nav>';
+                paginationControls.innerHTML = html;
+                
+                // Add event listeners to pagination controls
+                document.querySelectorAll('.page-link').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const page = parseInt(this.dataset.page);
+                        if (page >= 1 && page <= totalPages) {
+                            currentPage = page;
+                            loadItems();
+                        }
+                    });
+                });
+            }
+            
+            function renderTags(tags) {
+                if (!tags || tags.length === 0) {
+                    tagsListContainer.innerHTML = `
+                        <div class="text-white-50">
+                            No tags found.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                tagsListContainer.innerHTML = '';
+                
+                tags.forEach(tag => {
+                    const tagLink = document.createElement('a');
+                    tagLink.href = '#';
+                    tagLink.className = 'nav-link';
+                    tagLink.innerHTML = `<i class="fas fa-tag"></i> ${escapeHtml(tag)}`;
+                    tagLink.dataset.tag = tag;
+                    tagsListContainer.appendChild(tagLink);
+                    
+                    // Add click event
+                    tagLink.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        searchInput.value = `#${tag}`;
+                        searchQuery = `#${tag}`;
+                        currentPage = 1;
+                        loadItems();
+                    });
+                });
+            }
+            
+            function viewItemDetails(id) {
+                currentItemId = id;
+                
+                fetch(`/api/item/${id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(item => {
+                        const detailContent = document.getElementById('detail-content');
+                        
+                        if (item.type === 'text') {
+                            if (isCodeSnippet(item.content)) {
+                                const language = detectLanguage(item.content);
+                                detailContent.innerHTML = `
+                                    <div class="code-container">
+                                        <div class="code-language">${language}</div>
+                                        <pre><code class="${language}">${escapeHtml(item.content)}</code></pre>
+                                    </div>
+                                `;
+                            } else {
+                                detailContent.innerHTML = `<div class="content-text">${escapeHtml(item.content)}</div>`;
+                            }
+                        } else {
+                            detailContent.innerHTML = `<div class="text-center"><img src="${item.image_data}" class="img-fluid" alt="Clipboard image"></div>`;
+                        }
+                        
+                        // Initialize syntax highlighting for code blocks
+                        detailContent.querySelectorAll('pre code').forEach(block => {
+                            hljs.highlightElement(block);
+                        });
+                        
+                        // Render tags
+                        renderDetailTags(item.tags || []);
+                        
+                        // Show the modal
+                        itemDetailModal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error loading item details:', error);
+                        showToast('Error loading item details', 'danger');
+                    });
+            }
+            
+            function renderDetailTags(tags) {
+                const tagsContainer = document.getElementById('detail-tags');
+                tagsContainer.innerHTML = '';
+                
+                if (!tags || tags.length === 0) {
+                    tagsContainer.innerHTML = '<p class="text-muted">No tags</p>';
+                    return;
+                }
+                
+                tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `
+                        ${escapeHtml(tag)}
+                        <span class="ms-1 remove-tag" data-tag="${tag}">&times;</span>
+                    `;
+                    tagsContainer.appendChild(tagElement);
+                });
+                
+                // Add event listeners to remove tag buttons
+                document.querySelectorAll('.remove-tag').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const tag = this.dataset.tag;
+                        removeTag(currentItemId, tag);
+                    });
+                });
+            }
+            
+            function addText(text) {
+                fetch('/api/items/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        addTextModal.hide();
+                        showToast('Text added to clipboard', 'success');
+                        loadItems();
+                    })
+                    .catch(error => {
+                        console.error('Error adding text:', error);
+                        showToast('Error adding text to clipboard', 'danger');
+                    });
+            }
+            
+            function copyItem(id) {
+                fetch(`/api/item/${id}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(item => {
+                        if (item.type === 'text') {
+                            navigator.clipboard.writeText(item.content)
+                                .then(() => {
+                                    showToast('Copied to clipboard', 'success');
+                                })
+                                .catch(err => {
+                                    console.error('Could not copy text: ', err);
+                                    showToast('Failed to copy to clipboard', 'danger');
+                                });
+                        } else {
+                            showToast('Image copying is not supported in the web interface', 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error copying item:', error);
+                        showToast('Error copying item', 'danger');
+                    });
+            }
+            
+            function toggleFavorite(id) {
+                fetch(`/api/item/${id}/favorite`, {
+                    method: 'POST',
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Update UI
+                        const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${id}"]`);
+                        if (favoriteIcon) {
+                            if (data.favorite) {
+                                favoriteIcon.classList.remove('fa-star-o');
+                                favoriteIcon.classList.add('fa-star');
+                            } else {
+                                favoriteIcon.classList.remove('fa-star');
+                                favoriteIcon.classList.add('fa-star-o');
+                            }
+                        }
+                        
+                        showToast(
+                            data.favorite ? 'Added to favorites' : 'Removed from favorites',
+                            'success'
+                        );
+                    })
+                    .catch(error => {
+                        console.error('Error toggling favorite:', error);
+                        showToast('Error updating favorite status', 'danger');
+                    });
+            }
+            
+            function addTag(id, tag) {
+                fetch(`/api/item/${id}/tags`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ tag }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('new-tag-input').value = '';
+                        renderDetailTags(data.tags);
+                        showToast('Tag added', 'success');
+                        loadTags();
+                    })
+                    .catch(error => {
+                        console.error('Error adding tag:', error);
+                        showToast('Error adding tag', 'danger');
+                    });
+            }
+            
+            function removeTag(id, tag) {
+                fetch(`/api/item/${id}/tags/${encodeURIComponent(tag)}`, {
+                    method: 'DELETE',
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderDetailTags(data.tags);
+                        showToast('Tag removed', 'success');
+                        loadTags();
+                    })
+                    .catch(error => {
+                        console.error('Error removing tag:', error);
+                        showToast('Error removing tag', 'danger');
+                    });
+            }
+            
+            function deleteItem(id) {
+                fetch(`/api/item/${id}`, {
+                    method: 'DELETE',
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        itemDetailModal.hide();
+                        showToast('Item deleted', 'success');
+                        loadItems();
+                        loadTags();
+                    })
+                    .catch(error => {
+                        console.error('Error deleting item:', error);
+                        showToast('Error deleting item', 'danger');
+                    });
+            }
+            
+            function clearHistory(keepFavorites) {
+                fetch('/api/items/clear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ keep_favorites: keepFavorites }),
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        clearHistoryModal.hide();
+                        showToast(`History cleared (${data.deleted_count} items deleted)`, 'success');
+                        loadItems();
+                        loadTags();
+                    })
+                    .catch(error => {
+                        console.error('Error clearing history:', error);
+                        showToast('Error clearing history', 'danger');
+                    });
+            }
+            
+            // Helper functions
+            function setActiveNavLink(element) {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                element.classList.add('active');
+            }
+            
+            function showLoadingSpinner(container) {
+                container.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            function showToast(message, type = 'info') {
+                const toastId = 'toast-' + Date.now();
+                const toastContainer = document.getElementById('toast-container');
+                
+                const toastHtml = `
+                    <div id="${toastId}" class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                const toastElement = document.getElementById(toastId);
+                const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+                toast.show();
+                
+                // Remove toast element after it's hidden
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    toastElement.remove();
+                });
+            }
+            
+            function escapeHtml(text) {
+                if (!text) return '';
+                return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+            
+            function isCodeSnippet(text) {
+                // Simple heuristic to determine if this is likely code
+                if (!text) return false;
+                
+                // Code indicators
+                const codePatterns = [
+                    /function\s+\w+\s*\(/,  // JavaScript function
+                    /class\s+\w+/,          // Class definition
+                    /import\s+[\w\s,{}*]+\s+from/,  // ES6 import
+                    /def\s+\w+\s*\(/,        // Python function
+                    /<[a-z]+(\s+[a-z\-]+=".*?")*>/i, // HTML tag
+                    /\{\s*\n*\s*"[\w\s]+"\s*:/,  // JSON
+                    /SELECT\s+[\w\s,*]+\s+FROM/i,  // SQL
+                ];
+                
+                return codePatterns.some(pattern => pattern.test(text));
+            }
+            
+            function detectLanguage(text) {
+                if (!text) return 'plaintext';
+                
+                // Simplified language detection
+                if (text.match(/<[a-z]+(\s+[a-z\-]+=".*?")*>/i))
+                    return 'html';
+                if (text.match(/\{\s*\n*\s*"[\w\s]+"\s*:/))
+                    return 'json';
+                if (text.match(/function\s+\w+\s*\(/) || text.match(/const\s+\w+\s*=/))
+                    return 'javascript';
+                if (text.match(/public\s+class\s+\w+/) || text.match(/public\s+static\s+void\s+main/))
+                    return 'java';
+                if (text.match(/def\s+\w+\s*\(/) || text.match(/import\s+\w+/))
+                    return 'python';
+                if (text.match(/SELECT\s+[\w\s,*]+\s+FROM/i))
+                    return 'sql';
+                if (text.match(/#include\s+<[\w\.]+>/))
+                    return 'cpp';
+                
+                return 'plaintext';
+            }
+        });
+    </script>
 </body>
 </html>
