@@ -9,6 +9,7 @@ import os
 import sys
 import logging
 import threading
+import json
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from tkinter.scrolledtext import ScrolledText
@@ -947,7 +948,7 @@ class ClipboardManagerTkGUI:
             
         dialog = tk.Toplevel(self.root)
         dialog.title("Add Tag")
-        dialog.geometry("300x100")
+        dialog.geometry("300x150")
         dialog.transient(self.root)
         dialog.grab_set()
         
@@ -955,7 +956,7 @@ class ClipboardManagerTkGUI:
         dialog.focus_set()
         
         # Tag input
-        ttk.Label(dialog, text="Enter tag:").pack(anchor=tk.W, padx=10, pady=(10, 5))
+        ttk.Label(dialog, text="Enter tag:", font=("Helvetica", 10, "bold")).pack(anchor=tk.W, padx=10, pady=(10, 5))
         
         tag_var = tk.StringVar()
         tag_combo = ttk.Combobox(dialog, textvariable=tag_var)
@@ -964,6 +965,11 @@ class ClipboardManagerTkGUI:
         # Add recent tags to dropdown
         if self.last_tags:
             tag_combo['values'] = self.last_tags
+        
+        # Category checkbox
+        category_var = tk.BooleanVar(value=False)
+        category_check = ttk.Checkbutton(dialog, text="Create as category tag (add # prefix)", variable=category_var)
+        category_check.pack(anchor=tk.W, padx=10, pady=(0, 10))
         
         # Buttons
         button_frame = ttk.Frame(dialog)
@@ -975,16 +981,20 @@ class ClipboardManagerTkGUI:
                 messagebox.showwarning("Warning", "Please enter a tag")
                 return
                 
+            # Add category prefix if needed
+            if category_var.get() and not (tag.startswith("#") or tag.startswith("@")):
+                tag = "#" + tag
+                
             # Check if tag already exists for this item
-            current_tags = self.selected_item.get('tags', '')
-            if current_tags:
+            if self.selected_item and 'tags' in self.selected_item and self.selected_item['tags']:
                 try:
-                    tags_list = current_tags.split(',')
+                    # Parse JSON tags array
+                    tags_list = json.loads(self.selected_item['tags'])
                     if tag in tags_list:
                         messagebox.showinfo("Info", f"Tag '{tag}' already exists for this item")
                         return
-                except:
-                    pass
+                except Exception as e:
+                    logger.error(f"Error parsing tags: {e}")
                 
             # Add tag to item
             result = self.db_manager.add_tag(self.selected_item['id'], tag)
@@ -1021,7 +1031,7 @@ class ClipboardManagerTkGUI:
         dialog.geometry(f"{width}x{height}+{x}+{y}")
         
     def manage_tags(self, item=None):
-        """Manage tags for an item"""
+        """Manage tags for an item using the enhanced TagEditorDialog"""
         if not item:
             item = self.selected_item
             
@@ -1029,132 +1039,13 @@ class ClipboardManagerTkGUI:
             messagebox.showinfo("Info", "No item selected")
             return
             
-        dialog = tk.Toplevel(self.root)
-        dialog.title(f"Manage Tags for Item {item['id']}")
-        dialog.geometry("400x300")
-        dialog.transient(self.root)
-        dialog.grab_set()
+        # Use the enhanced tag editor dialog
+        from tag_manager import TagEditorDialog, TagManager
+        tag_manager = TagManager(self.db_manager)
+        TagEditorDialog(self.root, item['id'], tag_manager)
         
-        # Make dialog modal
-        dialog.focus_set()
-        
-        # Get current tags
-        current_tags = []
-        if item.get('tags'):
-            try:
-                current_tags = item['tags'].split(',')
-            except:
-                pass
-                
-        # Create listbox with current tags
-        ttk.Label(dialog, text="Current Tags:").pack(anchor=tk.W, padx=10, pady=(10, 5))
-        
-        frame = ttk.Frame(dialog)
-        frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
-        
-        # Scrollbar
-        scrollbar = ttk.Scrollbar(frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # Listbox
-        tags_listbox = tk.Listbox(frame, yscrollcommand=scrollbar.set)
-        tags_listbox.pack(fill=tk.BOTH, expand=True)
-        
-        scrollbar.config(command=tags_listbox.yview)
-        
-        # Add tags to listbox
-        for tag in current_tags:
-            tags_listbox.insert(tk.END, tag)
-            
-        # Add new tag frame
-        add_frame = ttk.Frame(dialog)
-        add_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
-        
-        ttk.Label(add_frame, text="Add New Tag:").pack(side=tk.LEFT)
-        
-        new_tag_var = tk.StringVar()
-        new_tag_entry = ttk.Entry(add_frame, textvariable=new_tag_var)
-        new_tag_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(5, 5))
-        
-        def add_new_tag():
-            tag = new_tag_var.get().strip()
-            if not tag:
-                return
-                
-            # Check if tag already exists
-            if tag in current_tags:
-                messagebox.showinfo("Info", f"Tag '{tag}' already exists for this item")
-                return
-                
-            # Add tag to item
-            result = self.db_manager.add_tag(item['id'], tag)
-            
-            if result:
-                current_tags.append(tag)
-                tags_listbox.insert(tk.END, tag)
-                new_tag_var.set("")
-                
-                # Update last used tags
-                if tag not in self.last_tags:
-                    self.last_tags.append(tag)
-                    if len(self.last_tags) > 10:
-                        self.last_tags.pop(0)
-            else:
-                messagebox.showerror("Error", f"Failed to add tag '{tag}'")
-        
-        add_tag_button = ttk.Button(add_frame, text="Add", command=add_new_tag)
-        add_tag_button.pack(side=tk.RIGHT)
-        
-        # Button to remove selected tag
-        def remove_selected_tag():
-            selection = tags_listbox.curselection()
-            if not selection:
-                messagebox.showinfo("Info", "No tag selected")
-                return
-                
-            index = selection[0]
-            tag = tags_listbox.get(index)
-            
-            # Confirm removal
-            if not messagebox.askyesno("Confirm", f"Remove tag '{tag}'?"):
-                return
-                
-            # Remove tag from item
-            result = self.db_manager.remove_tag(item['id'], tag)
-            
-            if result:
-                tags_listbox.delete(index)
-                current_tags.remove(tag)
-            else:
-                messagebox.showerror("Error", f"Failed to remove tag '{tag}'")
-        
-        # Button frame
-        button_frame = ttk.Frame(dialog)
-        button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
-        
-        remove_button = ttk.Button(button_frame, text="Remove Selected", command=remove_selected_tag)
-        remove_button.pack(side=tk.LEFT)
-        
-        close_button = ttk.Button(button_frame, text="Close", command=dialog.destroy)
-        close_button.pack(side=tk.RIGHT)
-        
-        # Set initial focus
-        new_tag_entry.focus_set()
-        
-        # Center dialog
-        dialog.update_idletasks()
-        width = dialog.winfo_width()
-        height = dialog.winfo_height()
-        x = (self.root.winfo_width() // 2) - (width // 2) + self.root.winfo_x()
-        y = (self.root.winfo_height() // 2) - (height // 2) + self.root.winfo_y()
-        dialog.geometry(f"{width}x{height}+{x}+{y}")
-        
-        # Update on close
-        def on_close():
-            self.refresh_items()
-            dialog.destroy()
-            
-        dialog.protocol("WM_DELETE_WINDOW", on_close)
+        # Refresh the display to show updated tags
+        self.refresh_items()
 
 
 def main():

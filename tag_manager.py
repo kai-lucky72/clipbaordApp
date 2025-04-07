@@ -122,7 +122,7 @@ class TagManager:
 
 class TagEditorDialog:
     """
-    Dialog for editing tags on a clipboard item
+    Enhanced dialog for editing tags on a clipboard item
     """
     def __init__(self, parent, item_id, tag_manager):
         """
@@ -142,74 +142,181 @@ class TagEditorDialog:
         # Create dialog window
         self.dialog = tk.Toplevel(parent)
         self.dialog.title("Edit Tags")
-        self.dialog.geometry("400x300")
+        self.dialog.geometry("500x400")
         self.dialog.transient(parent)  # Make it a modal dialog
         self.dialog.grab_set()  # Make it modal
+        
+        # Create custom styles for tag buttons
+        self.create_styles()
         
         # Initialize UI
         self.create_ui()
         
+    def create_styles(self):
+        """Create custom styles for the tag editor"""
+        style = ttk.Style()
+        
+        # Create style for tag buttons
+        style.configure("Tag.TLabel", 
+                       background="#e1e1e1", 
+                       foreground="#333333",
+                       padding=(8, 5),
+                       font=("Helvetica", 9))
+        
+        # Create style for category tag buttons
+        style.configure("CategoryTag.TLabel", 
+                       background="#4a86e8", 
+                       foreground="white",
+                       padding=(8, 5),
+                       font=("Helvetica", 9, "bold"))
+        
+        # Create style for remove button
+        style.configure("RemoveTag.TButton", 
+                       font=("Helvetica", 8),
+                       padding=1)
+                       
+        # Create style for tag containers
+        style.configure("TagContainer.TFrame", padding=5)
+        
     def create_ui(self):
         """Create the dialog UI"""
         # Main frame with padding
-        main_frame = ttk.Frame(self.dialog, padding="10")
+        main_frame = ttk.Frame(self.dialog, padding="15")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
         # Current tags section
-        ttk.Label(main_frame, text="Current Tags:", font=("Helvetica", 10, "bold")).pack(anchor=tk.W, pady=(0, 5))
+        header_frame = ttk.Frame(main_frame)
+        header_frame.pack(fill=tk.X, pady=(0, 10))
         
-        # Tags frame
-        tags_frame = ttk.Frame(main_frame)
-        tags_frame.pack(fill=tk.X, pady=(0, 10))
+        ttk.Label(header_frame, text="Current Tags", font=("Helvetica", 12, "bold")).pack(side=tk.LEFT)
+        
+        # Create a scrollable canvas for the tags
+        tag_canvas_frame = ttk.Frame(main_frame)
+        tag_canvas_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        
+        # Add canvas with scrollbar
+        tag_canvas = tk.Canvas(tag_canvas_frame, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(tag_canvas_frame, orient=tk.VERTICAL, command=tag_canvas.yview)
+        
+        # Configure canvas
+        tag_canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        tag_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Create a frame inside the canvas for the tags
+        self.tags_frame = ttk.Frame(tag_canvas, style="TagContainer.TFrame")
+        tags_window = tag_canvas.create_window((0, 0), window=self.tags_frame, anchor="nw", tags="self.tags_frame")
+        
+        # Update scrollregion when the size of the frame changes
+        def on_frame_configure(event):
+            tag_canvas.configure(scrollregion=tag_canvas.bbox("all"))
+            
+        self.tags_frame.bind("<Configure>", on_frame_configure)
+        
+        # Make the canvas resize the window when the frame changes size
+        def on_canvas_configure(event):
+            tag_canvas.itemconfig(tags_window, width=event.width)
+            
+        tag_canvas.bind("<Configure>", on_canvas_configure)
         
         # Add current tags as buttons with X to remove
-        self.update_tags_display(tags_frame)
+        self.update_tags_display()
         
         # Separator
-        ttk.Separator(main_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=10)
+        ttk.Separator(main_frame, orient=tk.HORIZONTAL).pack(fill=tk.X, pady=15)
         
         # Add new tag section
-        ttk.Label(main_frame, text="Add New Tag:", font=("Helvetica", 10, "bold")).pack(anchor=tk.W, pady=(0, 5))
+        add_tag_frame = ttk.Frame(main_frame)
+        add_tag_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        ttk.Label(add_tag_frame, text="Add New Tag", font=("Helvetica", 12, "bold")).pack(anchor=tk.W)
         
         # Entry frame
-        entry_frame = ttk.Frame(main_frame)
-        entry_frame.pack(fill=tk.X, pady=(0, 10))
+        entry_frame = ttk.Frame(add_tag_frame)
+        entry_frame.pack(fill=tk.X, pady=(5, 0))
         
-        # Tag entry
-        self.tag_entry = ttk.Entry(entry_frame)
+        # Tag entry with autocomplete
+        self.tag_var = tk.StringVar()
+        self.tag_entry = ttk.Combobox(entry_frame, textvariable=self.tag_var)
         self.tag_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
         
+        # Populate with all tags for autocomplete
+        self.tag_entry['values'] = self.all_tags
+        
         # Add button
-        add_button = ttk.Button(entry_frame, text="Add", command=self.add_tag)
+        add_button = ttk.Button(entry_frame, text="Add Tag", command=self.add_tag)
         add_button.pack(side=tk.RIGHT)
         
         # Bind enter key
         self.tag_entry.bind("<Return>", lambda e: self.add_tag())
         
-        # Existing tags section if any
+        # Category section
+        category_frame = ttk.Frame(main_frame)
+        category_frame.pack(fill=tk.X, pady=(0, 10))
+        
+        ttk.Label(category_frame, text="Is this a category tag?").pack(side=tk.LEFT)
+        
+        # Category checkbox
+        self.is_category = tk.BooleanVar(value=False)
+        category_check = ttk.Checkbutton(category_frame, text="Yes", variable=self.is_category)
+        category_check.pack(side=tk.LEFT, padx=(5, 0))
+        
+        # Existing tags section
+        ttk.Label(main_frame, text="Existing Tags", font=("Helvetica", 12, "bold")).pack(anchor=tk.W, pady=(5, 5))
+        
+        # Create a frame with scrollbar for existing tags
+        existing_tags_canvas_frame = ttk.Frame(main_frame)
+        existing_tags_canvas_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Add canvas with scrollbar
+        existing_tags_canvas = tk.Canvas(existing_tags_canvas_frame, highlightthickness=0)
+        existing_scrollbar = ttk.Scrollbar(existing_tags_canvas_frame, orient=tk.VERTICAL, command=existing_tags_canvas.yview)
+        
+        # Configure canvas
+        existing_tags_canvas.configure(yscrollcommand=existing_scrollbar.set)
+        existing_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        existing_tags_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        # Create a frame inside the canvas for the existing tags
+        existing_tags_frame = ttk.Frame(existing_tags_canvas)
+        existing_tags_window = existing_tags_canvas.create_window((0, 0), window=existing_tags_frame, anchor="nw")
+        
+        # Update scrollregion when the size of the frame changes
+        existing_tags_frame.bind("<Configure>", lambda e: existing_tags_canvas.configure(scrollregion=existing_tags_canvas.bbox("all")))
+        
+        # Make the canvas resize the window when the frame changes size
+        existing_tags_canvas.bind("<Configure>", lambda e: existing_tags_canvas.itemconfig(existing_tags_window, width=e.width))
+        
+        # Add buttons for existing tags if any
         if self.all_tags:
-            ttk.Label(main_frame, text="Existing Tags:", font=("Helvetica", 10, "bold")).pack(anchor=tk.W, pady=(10, 5))
-            
-            # Create a frame for existing tags
-            existing_tags_frame = ttk.Frame(main_frame)
-            existing_tags_frame.pack(fill=tk.X)
-            
-            # Add buttons for existing tags
             row = 0
             col = 0
-            for tag in self.all_tags:
+            max_cols = 4  # Maximum columns in grid
+            
+            for tag in sorted(self.all_tags):
                 if tag not in self.current_tags:  # Only show tags that aren't already added
-                    tag_button = ttk.Button(
-                        existing_tags_frame, 
-                        text=tag,
-                        command=lambda t=tag: self.add_existing_tag(t)
-                    )
-                    tag_button.grid(row=row, column=col, padx=2, pady=2, sticky=tk.W)
+                    # Determine if this is a category tag (simplified check - could be stored in DB)
+                    is_category = tag.startswith("#") or tag.startswith("@")
+                    
+                    # Create a tag button with appropriate style
+                    tag_frame = ttk.Frame(existing_tags_frame)
+                    
+                    if is_category:
+                        tag_button = ttk.Label(tag_frame, text=tag, style="CategoryTag.TLabel")
+                    else:
+                        tag_button = ttk.Label(tag_frame, text=tag, style="Tag.TLabel")
+                    
+                    tag_button.pack(side=tk.LEFT, padx=1, pady=1)
+                    tag_button.bind("<Button-1>", lambda e, t=tag: self.add_existing_tag(t))
+                    
+                    tag_frame.grid(row=row, column=col, padx=2, pady=2, sticky=tk.W)
                     
                     col += 1
-                    if col > 3:
+                    if col >= max_cols:
                         col = 0
                         row += 1
+        else:
+            ttk.Label(existing_tags_frame, text="No existing tags").grid(row=0, column=0, padx=10, pady=10)
         
         # Button frame at bottom
         button_frame = ttk.Frame(main_frame)
@@ -219,39 +326,61 @@ class TagEditorDialog:
         close_button = ttk.Button(button_frame, text="Close", command=self.on_close)
         close_button.pack(side=tk.RIGHT)
     
-    def update_tags_display(self, parent_frame):
+    def update_tags_display(self):
         """Update the display of current tags"""
         # Clear existing tags
-        for widget in parent_frame.winfo_children():
+        for widget in self.tags_frame.winfo_children():
             widget.destroy()
+        
+        # Create a FlowFrame-like layout
+        row = 0
+        col = 0
+        max_cols = 3  # Maximum columns in grid
         
         # Add current tags
         if not self.current_tags:
-            no_tags_label = ttk.Label(parent_frame, text="No tags")
-            no_tags_label.pack(anchor=tk.W)
+            no_tags_label = ttk.Label(self.tags_frame, text="No tags added yet")
+            no_tags_label.grid(row=0, column=0, padx=10, pady=10, sticky=tk.W)
             return
         
-        # Create a tag for each current tag
-        for i, tag in enumerate(self.current_tags):
-            tag_frame = ttk.Frame(parent_frame)
-            tag_frame.pack(side=tk.LEFT, padx=2, pady=2)
+        # Create a tag button for each current tag
+        for tag in sorted(self.current_tags):
+            # Create a container frame for the tag and its remove button
+            tag_container = ttk.Frame(self.tags_frame)
             
-            # Create a styled frame for the tag
-            tag_label = ttk.Label(tag_frame, text=tag, padding=(5, 2))
-            tag_label.pack(side=tk.LEFT)
+            # Determine if this is a category tag (simplified check - could be stored in DB)
+            is_category = tag.startswith("#") or tag.startswith("@")
+            
+            # Create a tag button with appropriate style
+            if is_category:
+                tag_button = ttk.Label(tag_container, text=tag, style="CategoryTag.TLabel")
+            else:
+                tag_button = ttk.Label(tag_container, text=tag, style="Tag.TLabel")
+                
+            tag_button.pack(side=tk.LEFT, padx=0, pady=0)
             
             # Add remove button
             remove_button = ttk.Button(
-                tag_frame,
+                tag_container,
                 text="×",
                 width=2,
+                style="RemoveTag.TButton",
                 command=lambda t=tag: self.remove_tag(t)
             )
-            remove_button.pack(side=tk.RIGHT)
+            remove_button.pack(side=tk.RIGHT, padx=(2, 0))
+            
+            # Place the container in the grid
+            tag_container.grid(row=row, column=col, padx=3, pady=3, sticky=tk.W)
+            
+            # Move to next column or row
+            col += 1
+            if col >= max_cols:
+                col = 0
+                row += 1
     
     def add_tag(self):
         """Add a new tag from the entry field"""
-        tag = self.tag_entry.get().strip()
+        tag = self.tag_var.get().strip()
         
         if not tag:
             return
@@ -259,24 +388,28 @@ class TagEditorDialog:
         if tag in self.current_tags:
             messagebox.showinfo("Info", f"Tag '{tag}' already exists")
             return
-            
+        
+        # Check if it should be a category tag
+        if self.is_category.get() and not (tag.startswith("#") or tag.startswith("@")):
+            tag = "#" + tag
+        
         # Add the tag
         updated_tags = self.tag_manager.add_tag(self.item_id, tag)
         
         if updated_tags is not None:
             self.current_tags = updated_tags
             
-            # Update the display
-            self.update_tags_display(self.dialog.winfo_children()[0].winfo_children()[1])
-            
             # Clear the entry
             self.tag_entry.delete(0, tk.END)
             
-            # Refresh dialog (recreate UI to show updated existing tags)
+            # Update all tags list and refresh UI
             self.all_tags = self.tag_manager.get_all_tags()
-            for widget in self.dialog.winfo_children():
-                widget.destroy()
-            self.create_ui()
+            self.tag_entry['values'] = self.all_tags
+            
+            # Update tag display without recreating entire UI
+            self.update_tags_display()
+        else:
+            messagebox.showerror("Error", f"Failed to add tag '{tag}'")
     
     def add_existing_tag(self, tag):
         """Add an existing tag"""
@@ -289,10 +422,8 @@ class TagEditorDialog:
         if updated_tags is not None:
             self.current_tags = updated_tags
             
-            # Refresh dialog (recreate UI)
-            for widget in self.dialog.winfo_children():
-                widget.destroy()
-            self.create_ui()
+            # Update tag display without recreating entire UI
+            self.update_tags_display()
     
     def remove_tag(self, tag):
         """Remove a tag"""
@@ -302,10 +433,8 @@ class TagEditorDialog:
         if updated_tags is not None:
             self.current_tags = updated_tags
             
-            # Refresh dialog (recreate UI)
-            for widget in self.dialog.winfo_children():
-                widget.destroy()
-            self.create_ui()
+            # Update tag display without recreating entire UI
+            self.update_tags_display()
     
     def on_close(self):
         """Close the dialog"""

@@ -4,10 +4,12 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "flask-login>=0.6.3",
     "flask>=3.1.0",
     "pillow>=11.1.0",
     "psycopg2-binary>=2.9.10",
     "pyperclip>=1.9.0",
     "pyqt5>=5.15.11",
     "sqlalchemy>=2.0.40",
+    "flask-wtf>=1.2.2",
 ]
