@@ -2,6 +2,8 @@
 
 A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features GUI, CLI, Quick Paste Popup, Web Interface, and Browser Extension, making it versatile for different environments and user preferences.
 
+![Clipboard Manager](https://raw.githubusercontent.com/kai-lucky72/clipbaordApp/main/browser_extension/images/icon128.svg)
+
 ## Features
 
 - **Clipboard Monitoring**: Continuously tracks text and images copied to your clipboard
@@ -17,15 +19,146 @@ A cross-platform clipboard manager that tracks your clipboard history and provid
 - **Web Interface**: Access your clipboard history through a browser
 - **Browser Extension**: Seamless integration with Chrome and Chromium-based browsers
 
+## 📋 Quick Start
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/kai-lucky72/clipbaordApp.git
+   cd clipbaordApp
+   ```
+
+2. Install dependencies
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Set up the PostgreSQL database
+   ```bash
+   export DATABASE_URL=postgresql://username:password@localhost:5432/clipboard_db
+   ```
+
+4. Start the application (choose one method)
+   ```bash
+   # GUI interface
+   python clipboard_app.py --gui
+   
+   # Web interface
+   python web_app.py
+   
+   # CLI interface
+   python cli_run.py
+   
+   # Quick Paste Popup
+   python clipboard_app.py --popup
+   ```
+
 ## Requirements
 
 - Python 3.8 or higher
-- SQLAlchemy
-- psycopg2-binary (for PostgreSQL support)
-- PostgreSQL database
-- Pillow (for image support)
-- Tkinter (included in standard Python library)
-- Flask (for web interface)
+- Dependencies:
+  - SQLAlchemy
+  - psycopg2-binary (for PostgreSQL support)
+  - PostgreSQL database
+  - Pillow (for image support)
+  - Tkinter (included in standard Python library)
+  - Flask (for web interface)
+  - PyQt5 (optional, for enhanced GUI features)
+  - pyperclip (for clipboard operations)
+  - flask-login (for web interface authentication)
+
+## Installation Guide
+
+### Environment Setup
+
+#### Windows
+
+1. Install Python 3.8+ from [python.org](https://www.python.org/downloads/)
+2. Install PostgreSQL from [postgresql.org](https://www.postgresql.org/download/windows/)
+3. Clone the repository and install dependencies:
+   ```bash
+   git clone https://github.com/kai-lucky72/clipbaordApp.git
+   cd clipbaordApp
+   pip install -r requirements.txt
+   ```
+4. Set up the database:
+   ```bash
+   set DATABASE_URL=postgresql://username:password@localhost:5432/clipboard_db
+   ```
+
+#### macOS
+
+1. Install Python and PostgreSQL using Homebrew:
+   ```bash
+   brew install python postgresql
+   brew services start postgresql
+   ```
+2. Clone and set up the application:
+   ```bash
+   git clone https://github.com/kai-lucky72/clipbaordApp.git
+   cd clipbaordApp
+   pip3 install -r requirements.txt
+   ```
+3. Configure the database:
+   ```bash
+   export DATABASE_URL=postgresql://username:password@localhost:5432/clipboard_db
+   ```
+
+#### Linux
+
+1. Install system dependencies:
+   ```bash
+   # Debian/Ubuntu
+   sudo apt update
+   sudo apt install python3 python3-pip python3-tk postgresql xclip
+   
+   # Fedora
+   sudo dnf install python3 python3-pip python3-tkinter postgresql xclip
+   
+   # Arch Linux
+   sudo pacman -S python python-pip tk postgresql xclip
+   ```
+2. Set up PostgreSQL:
+   ```bash
+   sudo systemctl start postgresql
+   sudo systemctl enable postgresql
+   sudo -u postgres createuser --interactive
+   sudo -u postgres createdb clipboard_db
+   ```
+3. Clone and set up the application:
+   ```bash
+   git clone https://github.com/kai-lucky72/clipbaordApp.git
+   cd clipbaordApp
+   pip3 install -r requirements.txt
+   ```
+4. Configure environment:
+   ```bash
+   export DATABASE_URL=postgresql://username:password@localhost:5432/clipboard_db
+   ```
+
+### Docker Installation
+
+1. Build and run using Docker:
+   ```bash
+   docker-compose up -d
+   ```
+   This will create and start containers for both the application and the PostgreSQL database.
+
+### Browser Extension Setup
+
+The browser extension enhances the clipboard manager by:
+- Silently capturing copied content when you press Ctrl+C
+- Showing a Quick Paste popup with recent items when you press Ctrl+V
+- Positioning the popup near your cursor for easy selection
+
+To install the browser extension:
+
+1. Start the web interface: `python web_app.py`
+2. Open Chrome or any Chromium-based browser
+3. Go to Extensions (chrome://extensions/)
+4. Enable Developer Mode
+5. Click "Load unpacked" button
+6. Select the `browser_extension` folder from the repository
+7. The extension is now ready to use!
 
 ## Usage
 
@@ -138,24 +271,77 @@ python web_app.py
 
 Then navigate to `http://localhost:5000` in your web browser.
 
-## Browser Extension
+## Browser Extension Features
 
 The Browser Extension integrates the Advanced Clipboard Manager with your browser:
 
-- Available for Chrome and other Chromium-based browsers (Edge, Brave, Opera)
-- Save selected text from web pages to clipboard history
-- Paste clipboard items directly into web forms
-- Access and manage your clipboard history without leaving the browser
-- Tag and favorite management
-- Syntax highlighting for code snippets
+- **Silent Copying**: Automatically saves text when you press Ctrl+C without any visual interruption
+- **Quick Paste Popup**: Shows 5 recent clipboard items when you press Ctrl+V, positioned near your cursor
+- **Seamless Integration**: Works with regular copy-paste operations without disrupting workflow
+- **Easy Installation**: Available for Chrome and other Chromium-based browsers
+- **Minimal User Interface**: Shows just what you need when you need it
 
-To install the browser extension:
+### Extension Usage
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" by toggling the switch in the top-right corner
-3. Click on "Load unpacked" button
-4. Select the `browser_extension` folder
-5. Ensure the Advanced Clipboard Manager app is running with the web interface active
+1. **Copying content**: 
+   - Simply use Ctrl+C as normal - the extension silently saves your copied content
+   - No popups or notifications interrupt your workflow
+
+2. **Pasting content**:
+   - When you press Ctrl+V, a small popup appears near your cursor
+   - The popup shows your 5 most recent clipboard items
+   - Click any item to paste it, or continue with default paste if you don't select anything
+   - Popup disappears automatically after selection or when you click elsewhere
+
+3. **Additional features**:
+   - The extension icon in your toolbar opens a full popup with search capability
+   - Link to full web interface for advanced management
+   - Context menu options for saving selected text
+
+## Deployment Options
+
+### Render.com Deployment
+
+1. Push your code to GitHub
+2. Log in to Render.com
+3. Create a new Web Service:
+   - Connect your repository
+   - Select as Python Application
+   - Set the build command: `pip install -r requirements.txt`
+   - Set the start command: `python web_app.py`
+   - Add environment variable: `DATABASE_URL`
+4. Create a new PostgreSQL database in Render
+5. Link the database to your web service
+
+### Heroku Deployment
+
+1. Install Heroku CLI and log in:
+   ```bash
+   heroku login
+   ```
+2. Create a Heroku app:
+   ```bash
+   heroku create advanced-clipboard-manager
+   ```
+3. Add PostgreSQL addon:
+   ```bash
+   heroku addons:create heroku-postgresql:hobby-dev
+   ```
+4. Push your code:
+   ```bash
+   git push heroku main
+   ```
+
+### Docker Deployment
+
+1. Build the Docker image:
+   ```bash
+   docker build -t clipboard-manager .
+   ```
+2. Run with Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
 
 ## In-Memory Clipboard
 
@@ -165,46 +351,39 @@ In environments where system clipboard tools (like xclip on Linux) are not avail
 
 By default, the application uses the PostgreSQL database specified in the `DATABASE_URL` environment variable. If this is not available, it will fall back to a SQLite database.
 
-## Advanced Search Features
+## Troubleshooting
 
-The clipboard manager includes robust search capabilities:
+### Common Issues
 
-- **Text Search**: Find any text in your clipboard history
-- **Database Optimization**: Efficiently searches binary data in PostgreSQL
-- **Fallback Support**: Works with both PostgreSQL and SQLite databases
-- **Case Insensitive**: Searches are case insensitive for easier matching
+1. **Database Connection Errors**:
+   - Ensure PostgreSQL is running: `pg_isready`
+   - Verify credentials in DATABASE_URL
+   - Check database permissions
 
-## GUI Interface
+2. **Clipboard Access Issues**:
+   - On Linux, ensure xclip is installed
+   - On macOS, grant terminal access to clipboard in System Preferences
+   - On Windows, verify user permissions
 
-The GUI interface provides a user-friendly way to interact with your clipboard history:
+3. **GUI Display Problems**:
+   - Ensure Tkinter/Qt dependencies are installed
+   - Check display settings and permissions
 
-- **Preview Panel**: View text and image content before copying
-- **Filter Options**: Filter by content type (text, images) or favorites
-- **Search Box**: Quickly find specific content
-- **Context Menu**: Right-click on items for additional options
-- **Image Handling**: View, copy, and save images from your clipboard
-- **Favorites**: Mark frequently used items with a star for easy access
-- **Tagging System**: Organize your clipboard items with custom tags
+4. **Browser Extension Issues**:
+   - Verify web interface is running at http://localhost:5000
+   - Check browser extension permissions
+   - Ensure the extension has clipboard access permissions
 
-### GUI Controls
+### Getting Help
 
-- **Menu Bar**: Access application functions and settings
-- **Filter Dropdown**: Filter clipboard items by type or favorite status
-- **Search Field**: Search for specific text in clipboard history
-- **Item List**: Browse and select clipboard items
-- **Preview Panel**: Preview the content of selected items
-- **Action Buttons**: Copy, delete, or favorite selected items
-- **Tag Management**: Add, remove, and filter by tags
+If you encounter issues, check the logs:
+- GUI/CLI: Check console output
+- Web Interface: Check browser console and server logs
+- Browser Extension: Check browser extension debugging console
 
-## Future Features
+## License
 
-The following features are planned for future releases:
-
-- **Encryption**: End-to-end encryption of sensitive clipboard data
-- **Cloud Synchronization**: Sync clipboard history across multiple devices
-- **Custom Categories**: Organize clipboard items beyond simple tags
-- **Export/Import**: Export and import clipboard history
-- **Hotkey Support**: Customizable keyboard shortcuts
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contributing
 
