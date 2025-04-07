@@ -1,3 +1,5 @@
+import vercel_setup
+vercel_setup.setup_vercel_environment()
 #!/usr/bin/env python3
 """
 Web Application Interface for Advanced Clipboard Manager
