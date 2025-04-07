@@ -15,8 +15,8 @@ def setup_logger():
     """
     Configure the application logger.
     """
-    # Check if running on Vercel
-    if 'VERCEL' in os.environ:
+    # Check if running on Vercel (several ways to detect)
+    if os.environ.get('VERCEL', '') == 'true' or os.environ.get('VERCEL_URL', ''):
         # On Vercel, only use console logging (no file logging)
         logging.basicConfig(
             level=logging.INFO,
@@ -26,14 +26,35 @@ def setup_logger():
             ]
         )
         
-        # Set level for third-party libraries
-        for logger_name in ['PIL', 'sqlalchemy.engine']:
+        # Set level for third-party libraries to reduce noise in logs
+        for logger_name in ['PIL', 'sqlalchemy.engine', 'werkzeug']:
             logging.getLogger(logger_name).setLevel(logging.WARNING)
         
         # Log system info
         logger = logging.getLogger(__name__)
         logger.info("Running on Vercel serverless environment")
         logger.info(f"Python: {platform.python_version()}")
+        
+        # Additional debugging info for database connection
+        if 'DATABASE_URL' in os.environ:
+            db_url = os.environ['DATABASE_URL']
+            # Mask password in logs
+            if '://' in db_url:
+                parts = db_url.split('://')
+                if '@' in parts[1]:
+                    auth_part = parts[1].split('@')[0]
+                    if ':' in auth_part:
+                        user = auth_part.split(':')[0]
+                        masked_url = f"{parts[0]}://{user}:****@{parts[1].split('@')[1]}"
+                        logger.info(f"Database URL format: {masked_url}")
+                    else:
+                        logger.info(f"Database URL provided (no password in URL)")
+                else:
+                    logger.info(f"Database URL provided (no auth in URL)")
+            else:
+                logger.info(f"Database URL provided (unusual format)")
+        else:
+            logger.warning("No DATABASE_URL provided")
         return
     
     # Regular environment (not Vercel)
@@ -104,8 +125,8 @@ def get_app_data_dir():
     """
     Get the application data directory based on platform.
     """
-    # Check if running on Vercel
-    if 'VERCEL' in os.environ:
+    # Check if running on Vercel (several ways to detect)
+    if os.environ.get('VERCEL', '') == 'true' or os.environ.get('VERCEL_URL', ''):
         # On Vercel, use a temporary directory that doesn't require creation
         return '/tmp'
         

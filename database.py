@@ -46,6 +46,11 @@ class DatabaseManager:
                 db_url = f'sqlite:///{db_path}'
         
         try:
+            # Fix for Vercel - PostgreSQL URL compatibility
+            # Vercel's PostgreSQL URLs use "postgres://", but SQLAlchemy needs "postgresql://"
+            if db_url and db_url.startswith('postgres://'):
+                db_url = db_url.replace('postgres://', 'postgresql://', 1)
+            
             # Initialize SQLAlchemy engine and session
             self.engine = create_engine(db_url)
             Base.metadata.create_all(self.engine)
