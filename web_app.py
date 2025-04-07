@@ -241,6 +241,16 @@ def add_text():
     else:
         return jsonify({'error': 'Failed to add text to clipboard'}), 500
 
+@app.route('/api/item/<int:item_id>', methods=['DELETE'])
+def delete_item(item_id):
+    """Delete a specific clipboard item"""
+    result = db_manager.delete_item(item_id)
+    
+    if result:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Failed to delete item'}), 500
+
 def main():
     """Run the web application"""
     # Start the clipboard monitoring service

@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const textToAdd = document.getElementById('textToAdd');
     const confirmAddTextBtn = document.getElementById('confirmAddTextBtn');
     
+    // Create delete button and add to actions bar
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'action-icon';
+    deleteBtn.title = 'Delete item';
+    deleteBtn.id = 'deleteBtn';
+    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    itemActions.appendChild(deleteBtn);
+    
     // Initialize
     loadItems();
     loadAllTags();
@@ -151,6 +159,51 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error toggling favorite:', error);
             showToast('Failed to update favorite status', 'error');
         });
+    });
+    
+    // Delete button functionality
+    deleteBtn.addEventListener('click', function() {
+        if (!selectedItemId) return;
+        
+        if (confirm('Are you sure you want to delete this item?')) {
+            fetch(`/api/item/${selectedItemId}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Item deleted successfully', 'success');
+                    
+                    // Remove the item from the list
+                    const itemElement = document.querySelector(`.clipboard-item[data-item-id="${selectedItemId}"]`);
+                    if (itemElement) {
+                        itemElement.remove();
+                    }
+                    
+                    // Update count
+                    totalItems--;
+                    itemsCount.textContent = totalItems;
+                    
+                    // Reset preview
+                    selectedItemId = null;
+                    resetPreview();
+                    
+                    // If there are no more items on this page but there are more pages, go to previous page
+                    if (document.querySelectorAll('.clipboard-item').length === 0 && currentPage > 1) {
+                        goToPage(currentPage - 1);
+                    } else {
+                        // Otherwise just reload current page
+                        loadItems();
+                    }
+                } else {
+                    showToast('Failed to delete item: ' + (data.error || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting item:', error);
+                showToast('Failed to delete item', 'error');
+            });
+        }
     });
     
     tagsBtn.addEventListener('click', function() {
