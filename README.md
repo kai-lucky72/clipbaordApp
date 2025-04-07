@@ -381,6 +381,42 @@ If you encounter issues, check the logs:
 - Web Interface: Check browser console and server logs
 - Browser Extension: Check browser extension debugging console
 
+## Vercel Deployment
+
+This application can also be deployed on Vercel with the following steps:
+
+1. Fork or push this repository to your GitHub account
+2. Log in to [Vercel](https://vercel.com)
+3. Create a new project and select your repository
+4. Configure the following settings:
+   - **Framework Preset**: Other
+   - **Build Command**: Leave empty (using vercel.json configuration)
+   - **Output Directory**: Leave empty
+   - **Install Command**: pip install -r requirements.txt
+5. Add the environment variable:
+   - `DATABASE_URL`: Your PostgreSQL connection string
+6. Click "Deploy"
+
+The Vercel deployment will automatically use the configuration in `vercel.json` which sets up the web app as a serverless function. 
+
+### Notes for Vercel Deployment
+
+- Only the web interface will be deployed on Vercel
+- For full functionality, you'll need to set up a PostgreSQL database (you can use Vercel's PostgreSQL integration)
+- The clipboard monitoring functionality won't be available in the serverless environment
+- For clipboard management features, you should use the browser extension, which will connect to your Vercel deployment
+
+### Vercel + Browser Extension
+
+To use the browser extension with your Vercel deployment:
+
+1. Deploy your application to Vercel using the steps above
+2. Edit the browser extension configuration (in `browser_extension/scripts/background.js`) to point to your Vercel URL:
+   ```javascript
+   const API_BASE_URL = 'https://your-vercel-deployment-url.vercel.app';
+   ```
+3. Load the extension into your browser as described in the Browser Extension Setup section
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
