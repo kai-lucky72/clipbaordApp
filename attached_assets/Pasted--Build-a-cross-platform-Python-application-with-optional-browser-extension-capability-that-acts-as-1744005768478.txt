@@ -1,0 +1,66 @@
+"Build a cross-platform Python application (with optional browser extension capability) that acts as an advanced clipboard manager. It must fulfill the following features and functionality:"
+
+✅ Functional Requirements:
+Clipboard Monitoring (Background Service):
+
+Continuously monitor and record every copied text and image item on the user's computer.
+
+Store a history of clipboard items with timestamp metadata.
+
+Save data in a local lightweight database (e.g., SQLite).
+
+Quick Paste Popup (Trigger on Paste):
+
+When the user presses Ctrl+V or clicks “Paste”:
+
+A minimal floating window appears showing the last 5 copied items (text/image).
+
+User can click on any of them to paste that specific item.
+
+Includes a small “x” button to delete an item.
+
+If an item is deleted from the top 5, the 6th item (if exists) becomes visible.
+
+Full Clipboard History Viewer:
+
+User can click “View More” in the popup to open a full-page window or desktop interface.
+
+Display all copied items (text or image), sorted by timestamp.
+
+Features: search bar, delete, update, and preview images/text.
+
+Optional tagging or favoriting for frequently used clips.
+
+Tech Stack Suggestions:
+
+Backend: Python with pyperclip, Pillow, pynput, keyboard, or pywin32 for clipboard handling.
+
+GUI: Use PyQt5, Tkinter, or Electron with Python backend (via eel or pywebview).
+
+Database: SQLite with ORM (e.g., SQLAlchemy).
+
+Tray App (optional): Add system tray icon to toggle history view or pause clipboard tracking.
+
+Browser Extension (optional): Communicate via localhost or REST API with a Flask server.
+
+📦 Additional Requirements:
+Startup with OS option (runs silently).
+
+Lightweight and efficient (minimal CPU/RAM usage).
+
+Option to toggle image tracking on/off.
+
+Clear code structure for future expansion (modular, MVC preferred).
+
+Optional encryption of clipboard data for privacy.
+
+🚀 Deliverables:
+Python codebase (clean, modular, documented).
+
+Executable installer for Windows/Mac/Linux.
+
+Optional Chrome/Firefox extension that communicates with the local app via WebSocket/HTTP.
+
+UI designs for both popup and full-page history viewer.
+
+README with setup instructions.
