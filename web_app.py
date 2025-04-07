@@ -76,7 +76,7 @@ def get_items():
             'type': item.get('type'),
             'timestamp': format_timestamp(item.get('timestamp')),
             'favorite': item.get('favorite', False),
-            'tags': json.loads(item.get('tags') or '[]')
+            'tags': item.get('tags') if isinstance(item.get('tags'), list) else []
         }
         
         # Add content preview
@@ -122,7 +122,7 @@ def get_item(item_id):
         'type': item.get('type'),
         'timestamp': format_timestamp(item.get('timestamp')),
         'favorite': item.get('favorite', False),
-        'tags': json.loads(item.get('tags') or '[]')
+        'tags': item.get('tags') if isinstance(item.get('tags'), list) else []
     }
     
     # Add content based on type
@@ -163,8 +163,12 @@ def get_item_tags(item_id):
         return jsonify({'error': 'Item not found'}), 404
         
     try:
-        tags = json.loads(item.get('tags') or '[]')
-        return jsonify({'tags': tags})
+        tags = item.get('tags')
+        if isinstance(tags, list):
+            return jsonify({'tags': tags})
+        else:
+            tags = json.loads(tags or '[]')
+            return jsonify({'tags': tags})
     except Exception as e:
         logger.error(f"Error parsing tags: {e}")
         return jsonify({'error': 'Failed to parse tags'}), 500
@@ -203,8 +207,11 @@ def get_all_tags():
     for item in all_items:
         if 'tags' in item and item['tags']:
             try:
-                tags = json.loads(item['tags'])
-                all_tags.update(tags)
+                if isinstance(item['tags'], list):
+                    all_tags.update(item['tags'])
+                else:
+                    tags = json.loads(item['tags'])
+                    all_tags.update(tags)
             except Exception as e:
                 logger.error(f"Error parsing tags: {e}")
     
@@ -218,6 +225,21 @@ def clear_history():
     count = db_manager.clear_history(keep_favorites=keep_favorites)
     
     return jsonify({'success': True, 'deleted_count': count})
+
+@app.route('/api/items/add', methods=['POST'])
+def add_text():
+    """Add text directly to clipboard history"""
+    text = request.json.get('text')
+    
+    if not text:
+        return jsonify({'error': 'Text is required'}), 400
+        
+    item_id = clipboard_manager.add_text_to_clipboard(text)
+    
+    if item_id:
+        return jsonify({'success': True, 'item_id': item_id})
+    else:
+        return jsonify({'error': 'Failed to add text to clipboard'}), 500
 
 def main():
     """Run the web application"""
