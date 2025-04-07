@@ -1,16 +1,18 @@
-# Advanced Clipboard Manager (CLI Edition)
+# Advanced Clipboard Manager
 
-A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. This CLI edition is designed to work in environments where GUI applications might not be available.
+A cross-platform clipboard manager that tracks your clipboard history and provides quick access to previously copied items. It features both GUI and CLI interfaces, making it versatile for different environments and user preferences.
 
 ## Features
 
-- **Clipboard Monitoring**: Continuously tracks text copied to your clipboard
+- **Clipboard Monitoring**: Continuously tracks text and images copied to your clipboard
 - **Database Storage**: Stores clipboard history in a PostgreSQL database
-- **Interactive CLI**: Easy-to-use command-line interface
+- **Multiple Interfaces**: Both GUI and CLI interfaces available
 - **Cross-Platform**: Works on Windows, macOS, and Linux
 - **Favorites**: Mark frequently used items as favorites for quick access
 - **Search Functionality**: Quickly find items in your clipboard history
 - **Tagging System**: Organize clipboard items with custom tags
+- **Image Support**: Store, view, and save images from your clipboard
+- **Preview Panel**: Preview text and images before copying
 
 ## Requirements
 
@@ -18,10 +20,25 @@ A cross-platform clipboard manager that tracks your clipboard history and provid
 - SQLAlchemy
 - psycopg2-binary (for PostgreSQL support)
 - PostgreSQL database
+- Pillow (for image support)
+- Tkinter (included in standard Python library)
 
 ## Usage
 
 ### Starting the Application
+
+```bash
+# Start with the default GUI interface
+python clipboard_app.py
+
+# Start specifically in GUI mode
+python clipboard_app.py --gui
+
+# Start in CLI mode
+python clipboard_app.py --cli
+```
+
+### Running the CLI Directly
 
 ```bash
 python main.py
@@ -29,6 +46,7 @@ python main.py
 
 ### Command-line Arguments
 
+When using the CLI mode:
 - `--monitor`: Start clipboard monitoring on startup
 - `--recent N`: Display N most recent clipboard items and exit
 
@@ -90,17 +108,36 @@ The clipboard manager includes robust search capabilities:
 - **Fallback Support**: Works with both PostgreSQL and SQLite databases
 - **Case Insensitive**: Searches are case insensitive for easier matching
 
+## GUI Interface
+
+The GUI interface provides a user-friendly way to interact with your clipboard history:
+
+- **Preview Panel**: View text and image content before copying
+- **Filter Options**: Filter by content type (text, images) or favorites
+- **Search Box**: Quickly find specific content
+- **Context Menu**: Right-click on items for additional options
+- **Image Handling**: View, copy, and save images from your clipboard
+- **Favorites**: Mark frequently used items with a star for easy access
+
+### GUI Controls
+
+- **Menu Bar**: Access application functions and settings
+- **Filter Dropdown**: Filter clipboard items by type or favorite status
+- **Search Field**: Search for specific text in clipboard history
+- **Item List**: Browse and select clipboard items
+- **Preview Panel**: Preview the content of selected items
+- **Action Buttons**: Copy, delete, or favorite selected items
+
 ## Future Features
 
 The following features are planned for future releases:
 
-- **Image Support**: Store and retrieve images from the clipboard
 - **Encryption**: End-to-end encryption of sensitive clipboard data
 - **Browser Extension**: Seamless integration with web browsers
 - **Cloud Synchronization**: Sync clipboard history across multiple devices
-- **GUI Interface**: A graphical user interface for desktop environments
 - **Custom Categories**: Organize clipboard items beyond simple tags
 - **Export/Import**: Export and import clipboard history
+- **Hotkey Support**: Customizable keyboard shortcuts
 
 ## Contributing
 

@@ -13,6 +13,7 @@ from threading import Thread, Event
 from enum import Enum
 
 from database import DatabaseManager
+from clipboard_adapter import ClipboardAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -80,30 +81,35 @@ class ClipboardManager:
         """
         Background thread for monitoring clipboard changes.
         """
-        try:
-            # Try to use pyperclip for cross-platform clipboard access
-            import pyperclip
-            have_pyperclip = True
-        except ImportError:
-            have_pyperclip = False
-            logger.warning("pyperclip not available, using in-memory clipboard only")
-            
         last_text = None
+        last_image_hash = None
         
         while not self.stop_event.is_set():
             try:
-                if have_pyperclip:
-                    # Get current clipboard text
+                # Get current clipboard text using our adapter
+                current_text = ClipboardAdapter.get_text()
+                if current_text and current_text != last_text:
+                    # Avoid duplicate entries for the same text
+                    last_text = current_text
+                    timestamp = datetime.now()
+                    item_id = self.db_manager.add_clipboard_item(current_text.encode('utf-8'), ClipItemType.TEXT.value, timestamp)
+                    logger.debug(f"New text added to clipboard history: {current_text[:50]}...")
+                
+                # Also check for images if tracking is enabled
+                if self.track_images:
                     try:
-                        current_text = pyperclip.paste()
-                        if current_text and current_text != last_text:
-                            # Avoid duplicate entries for the same text
-                            last_text = current_text
-                            timestamp = datetime.now()
-                            item_id = self.db_manager.add_clipboard_item(current_text.encode('utf-8'), ClipItemType.TEXT.value, timestamp)
-                            logger.debug(f"New text added to clipboard history: {current_text[:50]}...")
+                        image_data = ClipboardAdapter.get_image()
+                        if image_data:
+                            # Generate hash to avoid duplicates
+                            image_hash = hashlib.md5(image_data).hexdigest()
+                            if image_hash != last_image_hash:
+                                last_image_hash = image_hash
+                                timestamp = datetime.now()
+                                item_id = self.db_manager.add_clipboard_item(image_data, ClipItemType.IMAGE.value, timestamp)
+                                logger.debug(f"New image added to clipboard history (hash: {image_hash})")
                     except Exception as e:
-                        logger.error(f"Error getting clipboard content: {e}")
+                        logger.error(f"Error processing clipboard image: {e}")
+                        
             except Exception as e:
                 logger.error(f"Error in clipboard monitoring: {e}")
                 
@@ -127,15 +133,11 @@ class ClipboardManager:
         timestamp = datetime.now()
         item_id = self.db_manager.add_clipboard_item(text.encode('utf-8'), ClipItemType.TEXT.value, timestamp)
         
-        # Try to set system clipboard if pyperclip is available
-        try:
-            import pyperclip
-            pyperclip.copy(text)
+        # Try to set system clipboard using our adapter
+        if ClipboardAdapter.set_text(text):
             logger.debug(f"Text set to system clipboard: {text[:50]}...")
-        except ImportError:
-            logger.debug("pyperclip not available, content stored in database only")
-        except Exception as e:
-            logger.error(f"Error setting system clipboard: {e}")
+        else:
+            logger.debug("Failed to set text to system clipboard, content stored in database only")
             
         return item_id
     
@@ -163,8 +165,11 @@ class ClipboardManager:
         item_id = self.db_manager.add_clipboard_item(image_bytes, ClipItemType.IMAGE.value, timestamp)
         logger.debug(f"New image added to clipboard history (hash: {image_hash})")
         
-        # Note: Setting image to system clipboard requires GUI libraries
-        # in CLI mode, we just store it in the database
+        # Try to set the image to system clipboard
+        if ClipboardAdapter.set_image(image_bytes):
+            logger.debug(f"Image set to system clipboard (hash: {image_hash})")
+        else:
+            logger.debug("Failed to set image to system clipboard, content stored in database only")
         
         return item_id
     
@@ -185,23 +190,24 @@ class ClipboardManager:
         if clipboard_item['type'] == ClipItemType.TEXT.value:
             try:
                 content = clipboard_item['content'].decode('utf-8', errors='replace')
-                # Try to set system clipboard if pyperclip is available
-                try:
-                    import pyperclip
-                    pyperclip.copy(content)
+                # Try to set system clipboard using our adapter
+                if ClipboardAdapter.set_text(content):
                     logger.debug(f"Text set to system clipboard: {content[:50]}...")
-                except ImportError:
-                    logger.debug("pyperclip not available, content returned only")
-                except Exception as e:
-                    logger.error(f"Error setting system clipboard: {e}")
+                else:
+                    logger.debug("Failed to set text to system clipboard, content returned only")
                 return content
             except Exception as e:
                 logger.error(f"Error decoding text content: {e}")
                 return None
         
         elif clipboard_item['type'] == ClipItemType.IMAGE.value:
-            # In CLI mode, we can't display images directly
-            # Just return the binary data
+            # Try to set image to system clipboard
+            if ClipboardAdapter.set_image(clipboard_item['content']):
+                logger.debug("Image set to system clipboard")
+            else:
+                logger.debug("Failed to set image to system clipboard")
+                
+            # Return the binary data
             return clipboard_item['content']
         
         return None

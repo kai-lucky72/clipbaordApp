@@ -13,10 +13,13 @@ import threading
 import time
 import argparse
 import cmd
+import hashlib
 from datetime import datetime
 from typing import Optional, Union, List
 
 from database import DatabaseManager
+from clipboard_manager import ClipboardManager, ClipItemType
+from clipboard_adapter import ClipboardAdapter
 from utils import setup_logger, limit_text_length, format_timestamp
 
 # Configure logging
@@ -161,15 +164,11 @@ exit            - Exit the application
                 content = item['content'].decode('utf-8', errors='replace')
                 self.in_memory_clipboard = content
                 
-                # Try to set system clipboard if pyperclip is available
-                try:
-                    import pyperclip
-                    pyperclip.copy(content)
+                # Try to set system clipboard using our adapter
+                if ClipboardAdapter.set_text(content):
                     print(f"Copied to system clipboard: {limit_text_length(content, 50)}")
-                except ImportError:
-                    print(f"Copied to in-memory clipboard: {limit_text_length(content, 50)}")
-                except Exception as e:
-                    logger.error(f"Error setting system clipboard: {e}")
+                else:
+                    logger.error("Failed to set clipboard content")
                     print(f"Copied to in-memory clipboard only: {limit_text_length(content, 50)}")
             except Exception as e:
                 logger.error(f"Error decoding text content: {e}")
@@ -235,27 +234,28 @@ exit            - Exit the application
         try:
             # Implementation depends on the platform
             # For CLI, this is a simplified version
-            
-            # Try to import pyperclip once at the start
-            try:
-                import pyperclip
-                have_pyperclip = True
-                logger.info("Using pyperclip for clipboard monitoring")
-            except ImportError:
-                have_pyperclip = False
-                logger.warning("pyperclip not available, using fallback monitoring")
+            logger.info("Starting clipboard monitoring using ClipboardAdapter")
             
             while self.monitoring:
-                # Try to get clipboard content
-                if have_pyperclip:
-                    try:
-                        content = pyperclip.paste()
-                        if content and content != self.in_memory_clipboard:
-                            self.in_memory_clipboard = content
-                            self.db_manager.add_clipboard_item(content.encode('utf-8'), 'text')
-                            logger.info("Clipboard content added to history")
-                    except Exception as e:
-                        logger.error(f"Error accessing clipboard: {e}")
+                # Try to get clipboard content using our adapter
+                try:
+                    content = ClipboardAdapter.get_text()
+                    if content and content != self.in_memory_clipboard:
+                        self.in_memory_clipboard = content
+                        self.db_manager.add_clipboard_item(content.encode('utf-8'), 'text')
+                        logger.info("Clipboard content added to history")
+                        
+                    # Also check for images
+                    image_data = ClipboardAdapter.get_image()
+                    if image_data:
+                        # Create a simple hash to avoid duplicates
+                        image_hash = hashlib.md5(image_data).hexdigest()
+                        item_id = self.db_manager.add_clipboard_item(image_data, 'image')
+                        if item_id:
+                            logger.info(f"Clipboard image added to history (ID: {item_id})")
+                        
+                except Exception as e:
+                    logger.error(f"Error accessing clipboard: {e}")
                 
                 time.sleep(1)
         except Exception as e:
