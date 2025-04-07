@@ -1,0 +1,139 @@
+Apr 07 13:14:04.27
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.png
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:59.54
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.png
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:58.22
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:55.93
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:55.87
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:55.57
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:54.12
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:53.21
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:52.19
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:50.17
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:49.70
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:46.16
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:45.94
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:45.60
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:45.38
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:43.83
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:42.80
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:41.43
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:41.35
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:40.27
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:39.81
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:32.69
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:13:32.65
+GET
+500
+clipbaord-hk8qbfs9v-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+No more logs to show within selected ti

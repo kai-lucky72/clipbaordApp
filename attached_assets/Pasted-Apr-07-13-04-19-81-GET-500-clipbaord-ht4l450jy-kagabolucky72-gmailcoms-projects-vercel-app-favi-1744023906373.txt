@@ -1,0 +1,121 @@
+Apr 07 13:04:19.81
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:04:17.72
+GET
+500
+clipbaord-app.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:04:14.27
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:04:09.63
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/favicon.ico
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) No DATABASE_URL found, using SQLite fallback File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:04:08.06
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:04:05.64
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:37.93
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:36.74
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:34.36
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:33.35
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:32.80
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:30.24
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:28.44
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:27.92
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:24.44
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:24.21
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:24.20
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:23.30
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:17.74
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+Apr 07 13:03:17.73
+GET
+500
+clipbaord-ht4l450jy-kagabolucky72-gmailcoms-projects.vercel.app
+/
+No DATABASE_URL found, using SQLite fallback Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue. Traceback (most recent call last): File "/var/task/vc__handler__python.py", line 14, in <module> No DATABASE_URL found, using SQLite fallback __vc_spec.loader.exec_module(__vc_module) File "<frozen importlib._bootstrap_external>", line 999, in exec_module File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed File "/var/task/api/index.py", line 13, in <module> from web_app import app File "/var/task/web_app.py", line 23, in <module> setup_logger() File "/var/task/utils.py", line 31, in setup_logger os.makedirs(log_dir, exist_ok=True) File "<frozen os>", line 215, in makedirs File "<frozen os>", line 215, in makedirs File "<frozen os>", line 225, in makedirs OSError: [Errno 30] Read-only file system: '/home/sbx_user1051' Python process exited with exit status: 1. The logs above can help with debugging the issue.
+No more logs to show within selected timeline

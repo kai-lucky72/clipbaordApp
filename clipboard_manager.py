@@ -7,6 +7,7 @@ and managing clipboard content (text and images) in a CLI environment.
 import logging
 import time
 import io
+import os
 import hashlib
 from datetime import datetime
 from threading import Thread, Event
@@ -29,7 +30,7 @@ class ClipboardManager:
     def __init__(self, db_manager):
         self.db_manager = db_manager
         self.stop_event = Event()
-        self.monitoring_thread = None
+        self.monitoring_thread = None  # Public attribute for easier access
         self.track_images = True  # Can be toggled in settings
         self.previous_text = ""
         self.previous_image_hash = None
@@ -56,6 +57,11 @@ class ClipboardManager:
         """
         Start the clipboard monitoring service.
         """
+        # Skip monitoring in Vercel serverless environment
+        if 'VERCEL' in os.environ:
+            logger.info("Clipboard monitoring not started (running in Vercel serverless environment)")
+            return
+            
         if self.monitoring_thread is not None and self.monitoring_thread.is_alive():
             logger.warning("Clipboard monitoring already running")
             return

@@ -15,6 +15,28 @@ def setup_logger():
     """
     Configure the application logger.
     """
+    # Check if running on Vercel
+    if 'VERCEL' in os.environ:
+        # On Vercel, only use console logging (no file logging)
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[
+                logging.StreamHandler()
+            ]
+        )
+        
+        # Set level for third-party libraries
+        for logger_name in ['PIL', 'sqlalchemy.engine']:
+            logging.getLogger(logger_name).setLevel(logging.WARNING)
+        
+        # Log system info
+        logger = logging.getLogger(__name__)
+        logger.info("Running on Vercel serverless environment")
+        logger.info(f"Python: {platform.python_version()}")
+        return
+    
+    # Regular environment (not Vercel)
     # In a server environment like Replit, use the current directory for logs
     if os.environ.get('REPL_ID'):
         log_dir = os.path.join(os.getcwd(), 'logs')
@@ -59,7 +81,11 @@ def resource_path(relative_path):
     """
     try:
         # PyInstaller creates a temporary folder and places files there
-        base_path = sys._MEIPASS
+        # This attribute is injected by PyInstaller at runtime, so it will
+        # only exist when running from a packaged executable
+        base_path = getattr(sys, '_MEIPASS', None)
+        if base_path is None:
+            raise AttributeError("_MEIPASS not found")
     except Exception:
         # Running in normal Python environment
         base_path = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -78,6 +104,12 @@ def get_app_data_dir():
     """
     Get the application data directory based on platform.
     """
+    # Check if running on Vercel
+    if 'VERCEL' in os.environ:
+        # On Vercel, use a temporary directory that doesn't require creation
+        return '/tmp'
+        
+    # Regular environment (not Vercel)
     if platform.system() == 'Windows':
         app_data = os.path.join(os.environ['APPDATA'], 'ClipboardManager')
     elif platform.system() == 'Darwin':  # macOS

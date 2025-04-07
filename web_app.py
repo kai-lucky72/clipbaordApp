@@ -295,8 +295,8 @@ def system_info():
         },
         'server_info': {
             'version': '1.0.0',
-            'monitoring_active': clipboard_manager._monitoring_thread is not None and clipboard_manager._monitoring_thread.is_alive(),
-            'track_images': clipboard_manager._track_images,
+            'monitoring_active': clipboard_manager.monitoring_thread is not None and clipboard_manager.monitoring_thread.is_alive(),
+            'track_images': clipboard_manager.track_images,
             'timestamp': datetime.now().isoformat()
         }
     })
@@ -318,8 +318,10 @@ def extension_copy():
 
 def main():
     """Run the web application"""
-    # Start the clipboard monitoring service
-    clipboard_manager.start_monitoring()
+    # Only start monitoring if not running on Vercel
+    if 'VERCEL' not in os.environ:
+        # Start the clipboard monitoring service
+        clipboard_manager.start_monitoring()
     
     # Run the Flask application
     port = int(os.environ.get("PORT", 5000))
