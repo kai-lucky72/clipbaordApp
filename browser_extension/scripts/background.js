@@ -16,18 +16,12 @@ chrome.runtime.onInstalled.addListener(function(details) {
         contexts: ['selection']
     });
     
-    chrome.contextMenus.create({
-        id: 'show-recent',
-        title: 'Show Recent Items',
-        contexts: ['page', 'selection', 'editable']
-    });
-    
     // Initialize storage with default settings
     chrome.storage.local.get(['settings'], function(result) {
         if (!result.settings) {
             const defaultSettings = {
                 monitorClipboard: true,
-                showNotifications: true,
+                showNotifications: false, // Set to false to avoid showing notifications
                 autoConnect: true,
                 serverUrl: API_BASE_URL
             };
@@ -41,9 +35,6 @@ chrome.runtime.onInstalled.addListener(function(details) {
 chrome.contextMenus.onClicked.addListener(function(info, tab) {
     if (info.menuItemId === 'save-selection' && info.selectionText) {
         saveTextToClipboard(info.selectionText);
-    }
-    else if (info.menuItemId === 'show-recent') {
-        chrome.action.openPopup();
     }
 });
 
@@ -90,6 +81,9 @@ function startClipboardMonitoring() {
             console.log('Clipboard read permission not granted');
             // We'll rely on content script events instead
         }
+    }).catch(err => {
+        console.log('Clipboard permissions API not available, using fallback');
+        // We'll rely on content script events instead
     });
 }
 
@@ -123,6 +117,9 @@ function handleCopyToClipboard(text, sendResponse) {
         console.error('Could not copy text: ', err);
         sendResponse({ success: false, error: err.message });
     });
+    
+    // Also save to clipboard history silently
+    saveTextToClipboard(text);
 }
 
 function handleTextCopied(text, sendResponse) {
@@ -148,7 +145,8 @@ function saveTextToClipboard(text) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('Text saved to clipboard history');
+            // Successfully saved, but don't show notifications
+            console.log('Text saved to clipboard history, ID:', data.item_id);
         }
     })
     .catch(error => {
@@ -164,7 +162,6 @@ function deleteClipboardItem(itemId, sendResponse) {
     .then(data => {
         if (data.success) {
             sendResponse({ success: true });
-            showNotification('Item deleted from clipboard history');
         } else {
             sendResponse({ success: false, error: data.error || 'Failed to delete item' });
         }
@@ -175,28 +172,11 @@ function deleteClipboardItem(itemId, sendResponse) {
     });
 }
 
-function showNotification(message) {
-    // Check if notifications are enabled
-    chrome.storage.local.get(['settings'], function(result) {
-        const settings = result.settings || { showNotifications: true };
-        
-        if (settings.showNotifications) {
-            chrome.notifications.create({
-                type: 'basic',
-                iconUrl: 'images/icon128.png',
-                title: 'Advanced Clipboard Manager',
-                message: message,
-                priority: 0
-            });
-        }
-    });
-}
-
 function getSettings(sendResponse) {
     chrome.storage.local.get(['settings'], function(result) {
         const settings = result.settings || {
             monitorClipboard: true,
-            showNotifications: true,
+            showNotifications: false, // No notifications
             autoConnect: true,
             serverUrl: API_BASE_URL
         };
@@ -210,7 +190,7 @@ function getSettingsPromise() {
         chrome.storage.local.get(['settings'], function(result) {
             const settings = result.settings || {
                 monitorClipboard: true,
-                showNotifications: true,
+                showNotifications: false, // No notifications
                 autoConnect: true,
                 serverUrl: API_BASE_URL
             };
@@ -229,13 +209,17 @@ function saveSettings(settings, sendResponse) {
 function toggleMonitoring(sendResponse) {
     isMonitoring = !isMonitoring;
     sendResponse({ isMonitoring });
-    
-    if (isMonitoring) {
-        showNotification('Clipboard monitoring enabled');
-    } else {
-        showNotification('Clipboard monitoring disabled');
-    }
 }
 
 // Start clipboard monitoring if possible
 startClipboardMonitoring();
+
+// Listen for keyboard shortcuts
+chrome.commands.onCommand.addListener((command) => {
+    if (command === "paste_clipboard") {
+        // This will be triggered when the user presses the paste shortcut (Ctrl+Shift+V)
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, {action: "showQuickPaste"});
+        });
+    }
+});

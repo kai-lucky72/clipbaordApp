@@ -22,7 +22,7 @@
     "clipboardWrite",
     "storage",
     "contextMenus",
-    "notifications",
+    "commands",
     "tabs"
   ],
   "host_permissions": [
@@ -44,6 +44,13 @@
         "mac": "Command+Shift+C"
       },
       "description": "Open Clipboard Manager"
+    },
+    "paste_clipboard": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "Show Quick Paste Popup"
     }
   },
   "web_accessible_resources": [

@@ -4,15 +4,24 @@ A powerful browser extension for the Advanced Clipboard Manager that allows you 
 
 ## Features
 
-- **View Clipboard History**: Access your entire clipboard history from your browser
-- **Search & Filter**: Find specific clipboard items quickly
-- **Context Menu Integration**: Save selected text directly to your clipboard history
-- **Copy & Paste**: Copy or paste items with a single click
-- **Favorites**: Mark frequently used items as favorites for quick access
-- **Tags**: Organize clipboard items with custom tags
-- **Code Highlighting**: Syntax highlighting for code snippets
-- **Keyboard Shortcuts**: Quick access with keyboard shortcuts
-- **Responsive Interface**: Modern, responsive design that works across devices
+- **Seamless Clipboard Integration**: Automatically saves anything you copy (Ctrl+C) without disrupting your workflow
+- **Quick Paste Popup**: Press Ctrl+V to see a small popup with your 5 most recent clipboard items
+- **Smart Positioning**: The popup appears near your cursor for easy selection
+- **Multi-Content Support**: Works with text, code snippets, and images
+- **Simple Interface**: Minimal UI shows just what you need when you need it
+- **Link to Full Application**: Access the full web interface when needed
+
+## How It Works
+
+1. **When you press Ctrl+C**: The extension silently saves your copied content to the clipboard history without showing any notifications or popups, allowing you to continue working without interruption.
+
+2. **When you press Ctrl+V**: 
+   - A small popup appears near your cursor with your 5 most recent clipboard items
+   - Select any item to paste it into the current field
+   - Continue with the standard paste operation if you don't select an item
+   - The popup disappears after pasting or when you click elsewhere
+
+3. **Need More Options?**: The popup includes a link to the full web interface where you can manage your entire clipboard history, add tags, search, etc.
 
 ## Installation
 
@@ -29,68 +38,27 @@ A powerful browser extension for the Advanced Clipboard Manager that allows you 
 4. Select the `browser_extension` folder
 5. The extension should now be installed and visible in your browser toolbar
 
-## Usage
+## Keyboard Shortcuts
 
-### Basic Usage
+- **Ctrl+C**: Copy and silently save to clipboard history (standard copy behavior)
+- **Ctrl+V**: Show the quick paste popup with your 5 most recent items (alongside standard paste)
+- **Ctrl+Shift+C**: Open the full extension popup for advanced management
+- **Ctrl+Shift+V**: Explicitly trigger the quick paste popup (alternative)
 
-1. Click the extension icon in your browser toolbar to open the main interface
-2. Browse your clipboard history
-3. Click on any item to see its full content in the preview panel
-4. Use the action buttons to copy, paste, favorite, tag, or delete items
+## Usage Tips
 
-### Advanced Features
-
-- **Search**: Use the search bar to find specific clipboard content
-- **Filtering**: Filter items by type (text/image) or favorite status
-- **Tagging**: Add tags to organize your clipboard items
-- **Direct Input**: Add text directly to clipboard history without copying it first
-
-### Keyboard Shortcuts
-
-- Press `Ctrl+Shift+C` (or `Cmd+Shift+C` on Mac) to open the extension popup
-- Within the popup, use arrow keys to navigate items and Enter to select
-
-### Context Menu
-
-- Right-click on any selected text on a web page
-- Choose "Save to Clipboard History" to add the text to your clipboard history
-- Choose "Show Recent Items" to open the extension popup
-
-## Settings
-
-The extension provides several configurable settings:
-
-- **Monitor Clipboard**: Automatically track clipboard changes while browsing
-- **Show Notifications**: Display notifications when items are added to clipboard history
-- **Auto-Connect to Server**: Automatically connect to the clipboard manager server on startup
-- **Server URL**: Configure the URL of the clipboard manager server
-
-To access settings:
-1. Open the extension popup
-2. Click on the settings icon in the top-right corner
+- The extension works best when the Advanced Clipboard Manager server is running in the background
+- Multiple consecutive copies are all saved automatically
+- When pasting, the popup shows only the 5 most recent items for quick access
+- For older items, use the full web interface accessible from the popup's bottom link
 
 ## Technical Information
 
-### Architecture
-
-The extension consists of:
-
-1. **Background Script**: Monitors the clipboard and manages communication with the server
-2. **Content Script**: Interacts with web pages for selecting text and pasting
-3. **Popup UI**: The main interface for viewing and managing clipboard items
-
-### Security
-
-The extension requires several permissions:
-
+The extension requires these permissions:
 - `clipboardRead` and `clipboardWrite`: To access and modify the clipboard
 - `storage`: To store extension settings
 - `contextMenus`: To add right-click menu options
 - `host permissions for localhost:5000`: To communicate with the clipboard manager server
-
-### API Integration
-
-The extension communicates with the Advanced Clipboard Manager server using a REST API.
 
 ## Troubleshooting
 
@@ -104,11 +72,3 @@ If you experience issues:
 ## License
 
 This extension is part of the Advanced Clipboard Manager project and is subject to the same license terms.
-
-## Further Information
-
-For more detailed information, see:
-
-- [Extension Documentation](EXTENSION.md): Detailed technical documentation
-- [Examples](examples/README.md): Code examples and reference materials
-- [Main Project README](../README.md): Information about the full application
